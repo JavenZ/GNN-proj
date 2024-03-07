@@ -1,0 +1,10 @@
+numpy
+pandas
+sklearn
+neat-python
+torch
+torchvision
+torchaudio
+matplotlib
+torch_geometric
+ydata-synthetic
