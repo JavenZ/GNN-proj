@@ -15,8 +15,7 @@ class TrainerNEAT:
         self.config = config
         self.t = 1000  # number of generations
         self.restore_ckpt = True  # restore from the last checkpoint?
-        # self.ckpt_path = "/egr/scratch/zamojcin/checkpoints/"
-        self.ckpt_path = "./checkpoints/"
+        self.ckpt_path = "./checkpoints/"  # "/egr/scratch/zamojcin/checkpoints/"
         self.ckpt_prefix = os.path.join(self.ckpt_path, "neat-ckpt-")
         self.p = None  # population instance
         self.x_data = x_data

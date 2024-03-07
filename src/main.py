@@ -21,29 +21,15 @@ from ydata_synthetic.synthesizers import ModelParameters, TrainParameters
 
 def train_torch():
     """
-    Train using PyTorch.
+    Preprocess data.
     """
-    # load data
-    adj = sp.load_npz('./data_2024/adj.npz')
-    feat = np.load('./data_2024/features.npy')
-    labels = np.load('./data_2024/labels.npy')
-    splits = json.load(open('./data_2024/splits.json'))
-    idx_train, idx_test = splits['idx_train'], splits['idx_test']
+    x = features
 
-    adj_csr = np.load('./data_2024/adj.npz')  # (2480, 2480) CSR matrix
-    adj_csr = csr_matrix((adj_csr['data'], adj_csr['indices'], adj_csr['indptr']), shape=adj_csr['shape']).toarray()
+    # scale
+    scaler = StandardScaler()
+    # x = scaler.fit_transform(x)
 
-    cora_dataset = Planetoid(root='C:\Tmp\Cora', name='Cora')
-    cora_data = cora_dataset[0]
-
-    # preprocess data
-    x = feat
-    # x = np.concatenate((adj_csr, feat), axis=1)
-
-    # scaler = StandardScaler()
-    # scaler.fit(x)
-    # x = scaler.transform(x)
-    #
+    # dimensionality reduction
     # pca = PCA(.95)
     # print(x.shape)
     # pca.fit(x)
@@ -56,7 +42,9 @@ def train_torch():
     y = torch.from_numpy(labels).type(torch.long)
     edges = from_scipy_sparse_matrix(adj)
 
-    # create data splits
+    """
+    Create data splits.
+    """
     np.random.shuffle(idx_train)
     train_mask = np.zeros((x.shape[0],)).astype(bool)
     # train_mask[idx_train[:450]] = 1
@@ -66,7 +54,9 @@ def train_torch():
     test_mask = torch.zeros((x.shape[0],)).type(torch.bool)
     test_mask[idx_test] = 1
 
-    # construct torch data object
+    """
+    Construct Torch data objects.
+    """
     data = Data(
         x=x,
         y=y,
@@ -76,12 +66,6 @@ def train_torch():
         val_mask=val_mask,
         test_mask=test_mask,
     )
-
-    print(data)
-    # transform = T.Compose([T.NormalizeFeatures(), T.Pad(max_num_nodes=1433, max_num_edges=10556)])
-    # transform = T.Compose([T.SVDFeatureReduction(out_channels=1390), T.RemoveIsolatedNodes(), T.RemoveDuplicatedEdges()])
-    # cora_data = transform(cora_data)
-    # print(cora_data)
 
     # joined_data = Data(
     #     x=torch.concatenate((data.x, cora_data.x)),
@@ -93,75 +77,48 @@ def train_torch():
     # joined_data.val_mask.resize(joined_data.x.shape[0])
     # print(joined_data)
 
-    df = pd.DataFrame(data.x.numpy())
-    print(df)
-    synth = RegularSynthesizer(modelname='fast')
-    synth.fit(data=df)
-    synth_data = synth.sample(1000)
-    print(synth_data)
+    """
+    Synthesize additional training data.
+    """
+    # df = pd.DataFrame(data.x.numpy())
+    # print(df)
+    # synth = RegularSynthesizer(modelname='fast')
+    # synth.fit(data=df)
+    # synth_data = synth.sample(1000)
+    # print(synth_data)
 
-    # run trainer
+    """
+    Run Trainer.
+    """
     trainer = TrainerTorch()
     trainer.run(data)
 
 
 def train_neat():
     """
-    Train using NEAT.
+    Preprocess data.
     """
-
-    labels = np.load('./data_2024/labels.npy')  # (496,) [0-6] training labels
-    features = np.load('./data_2024/features.npy')  # (2480, 1390) [0-1] node features
-
-    adj = np.load('./data_2024/adj.npz')  # (2480, 2480) CSR matrix
-    adj = csr_matrix((adj['data'], adj['indices'], adj['indptr']), shape=adj['shape']).toarray()
-
-    with open('./data_2024/splits.json', "r") as f:
-        splits = json.load(f)  # ['idx_train', 'idx_test']
-        idx_train = splits['idx_train']  # (496,)
-        idx_test = splits['idx_test']  # (1984,)
-
-    """
-    Prepare data.
-    """
-    i = 0
-    neigh_feats = features[adj[i].astype(bool)]
-    print(neigh_feats, neigh_feats.shape)
-    # neigh_feats = neigh_feats.mean(axis=0)
-    agg_feats = features[i] + neigh_feats.mean(axis=0)
-    print(agg_feats.count())
-
-    # t2 = np.concatenate(((features[i],), features[t]))
-    exit()
-
-    # join adj and features matrices
-    # x = features
-    x = np.concatenate((adj, features), axis=1)
+    # graph aggregated spacial filter
+    x = []
+    for i in range(len(features)):
+        neigh_feats = features[adj_csr[i].astype(bool)]
+        # print(neigh_feats, neigh_feats.shape)
+        agg_feats = features[i] + neigh_feats.mean(axis=0)  # weighed-mean aggregation
+        x.append(agg_feats)
+    x = np.array(x)
 
     # scale
-    # scaler = StandardScaler()
-    # scaler.fit(x)
-    # x = scaler.transform(x)
-    # x_train = scaler.transform(x_train)
-    # x_test = scaler.transform(x_test)
-    # x_val = scaler.transform(x_eval)
+    scaler = StandardScaler()
+    x = scaler.fit_transform(x)
 
     # dimensionality reduction
     # pca = PCA(.95)
-    print(x.shape)
-    # pca.fit(x)
+    # x = pca.fit_transform(x)
     # print(pca.n_components_)
-
-    # x = pca.transform(x)
-    # x_train = pca.transform(x_train)
-    # x_test = pca.transform(x_test)
-    # x_val = pca.transform(x_eval)
-    # print(x.shape)
 
     # split
     x_train = np.array([x[idx] for idx in idx_train])
-    x_test = np.array([x[idx] for idx in idx_test])  # teacher evaluation set
-    # x_train, x_test, y_train, y_test = train_test_split(x_train, labels, random_state=104, test_size=0.25, shuffle=True)
+    x_test = np.array([x[idx] for idx in idx_test])
     print(x_train.shape, x_test.shape)
 
     """
@@ -178,5 +135,24 @@ def train_neat():
 
 
 if __name__ == "__main__":
+    """
+    Load data.
+    """
+    labels = np.load('./data_2024/labels.npy')  # (496,) [0-6] training labels
+    features = np.load('./data_2024/features.npy')  # (2480, 1390) [0-1] node features
+
+    adj = sp.load_npz('./data_2024/adj.npz')
+    adj_csr = np.load('./data_2024/adj.npz')  # (2480, 2480) CSR matrix
+    adj_csr = csr_matrix((adj_csr['data'], adj_csr['indices'], adj_csr['indptr']), shape=adj_csr['shape']).toarray()
+
+    splits = json.load(open('./data_2024/splits.json'))  # ['idx_train', 'idx_test']
+    idx_train = splits['idx_train']  # (496,)
+    idx_test = splits['idx_test']  # (1984,)
+
+    cora_data = Planetoid(root='C:\Tmp\Cora', name='Cora')[0]
+
+    """
+    Run trainer.
+    """
     # train_torch()
     train_neat()
