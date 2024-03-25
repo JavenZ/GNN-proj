@@ -19,7 +19,7 @@ from ydata_synthetic.synthesizers.regular import RegularSynthesizer
 from ydata_synthetic.synthesizers import ModelParameters, TrainParameters
 
 
-def train_torch():
+def train_torch(labels, features, adj, adj_csr, idx_train, idx_test, cora_data):
     """
     Preprocess data.
     """
@@ -38,19 +38,17 @@ def train_torch():
 
     # format data
     x = torch.from_numpy(x).type(torch.float)
-    labels.resize((x.shape[0],))
-    y = torch.from_numpy(labels).type(torch.long)
+    y = torch.from_numpy(np.resize(labels, (x.shape[0],))).type(torch.long)
     edges = from_scipy_sparse_matrix(adj)
 
     """
     Create data splits.
     """
-    np.random.shuffle(idx_train)
+    # np.random.shuffle(idx_train)
     train_mask = np.zeros((x.shape[0],)).astype(bool)
-    # train_mask[idx_train[:450]] = 1
+    train_mask[idx_train[:450]] = 1
     val_mask = np.zeros((x.shape[0],)).astype(bool)
-    # val_mask[idx_train[450:]] = 1
-    val_mask[idx_train] = 1
+    val_mask[idx_train[450:]] = 1
     test_mask = torch.zeros((x.shape[0],)).type(torch.bool)
     test_mask[idx_test] = 1
 
@@ -61,7 +59,6 @@ def train_torch():
         x=x,
         y=y,
         edge_index=edges[0],
-        # edge_attr=edges[1],
         train_mask=train_mask,
         val_mask=val_mask,
         test_mask=test_mask,
@@ -91,10 +88,13 @@ def train_torch():
     Run Trainer.
     """
     trainer = TrainerTorch()
-    trainer.run(data)
+    trainer.run(
+        run_id=2,
+        data=data,
+    )
 
 
-def train_neat():
+def train_neat(labels, features, adj, adj_csr, idx_train, idx_test, cora_data):
     """
     Preprocess data.
     """
@@ -138,21 +138,21 @@ if __name__ == "__main__":
     """
     Load data.
     """
-    labels = np.load('./data_2024/labels.npy')  # (496,) [0-6] training labels
-    features = np.load('./data_2024/features.npy')  # (2480, 1390) [0-1] node features
+    _labels = np.load('./data_2024/labels.npy')  # (496,) [0-6] training labels
+    _features = np.load('./data_2024/features.npy')  # (2480, 1390) [0-1] node features
 
-    adj = sp.load_npz('./data_2024/adj.npz')
-    adj_csr = np.load('./data_2024/adj.npz')  # (2480, 2480) CSR matrix
-    adj_csr = csr_matrix((adj_csr['data'], adj_csr['indices'], adj_csr['indptr']), shape=adj_csr['shape']).toarray()
+    _adj = sp.load_npz('./data_2024/adj.npz')
+    _adj_csr = np.load('./data_2024/adj.npz')  # (2480, 2480) CSR matrix
+    _adj_csr = csr_matrix((_adj_csr['data'], _adj_csr['indices'], _adj_csr['indptr']), shape=_adj_csr['shape']).toarray()
 
     splits = json.load(open('./data_2024/splits.json'))  # ['idx_train', 'idx_test']
-    idx_train = splits['idx_train']  # (496,)
-    idx_test = splits['idx_test']  # (1984,)
+    _idx_train = splits['idx_train']  # (496,)
+    _idx_test = splits['idx_test']  # (1984,)
 
-    cora_data = Planetoid(root='C:\Tmp\Cora', name='Cora')[0]
+    _cora = Planetoid(root='C:\Tmp\Cora', name='Cora')[0]
 
     """
     Run trainer.
     """
-    # train_torch()
-    train_neat()
+    train_torch(_labels, _features, _adj, _adj_csr, _idx_train, _idx_test, _cora)
+    # train_neat()

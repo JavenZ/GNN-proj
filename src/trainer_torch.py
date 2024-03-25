@@ -1,9 +1,13 @@
+import json
+import os
+import time
 import torch
 import torch.nn.functional as F
 from torch_geometric.nn import GCNConv
 from torch_geometric.utils import from_scipy_sparse_matrix
 from torch_geometric.data import Data
 import numpy as np
+import logging
 
 
 class GCN(torch.nn.Module):
@@ -27,39 +31,93 @@ class TrainerTorch:
     def __init__(self):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    def run(self, data):
-        # data = dataset[0].to(self.device)
+    def run(self, run_id, data, lr=0.01, weight_decay=5e-4, n_hidden=16, n_epochs=5000, lr_decay=0.8, lr_patience=50, epoch_patience=500):
+        # graph convolutional network model
         model = GCN(
             num_node_features=data.x.shape[1],
-            num_hidden=16,
+            num_hidden=n_hidden,
             num_classes=int((data.y.max() + 1).item())
         ).to(self.device)
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
+
+        # optimizer
+        optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
+        # optimizer = torch.optim.Adam([
+        #         {'params': model.conv1.parameters(), 'weight_decay': weight_decay},
+        #         {'params': model.conv2.parameters(), 'weight_decay': weight_decay}
+        #     ], lr=lr
+        # )
+        lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+            optimizer=optimizer,
+            factor=lr_decay,
+            patience=lr_patience
+        )
+
+        # logging
+        logger = logging.getLogger()
+        logger.setLevel(logging.INFO)
+        fileHandler = logging.FileHandler(f"logs/{run_id}.log")
+        logger.addHandler(fileHandler)
+        consoleHandler = logging.StreamHandler()
+        logger.addHandler(consoleHandler)
 
         """
-        Train model.
+        Train Model.
         """
-        model.train()
-        for epoch in range(5000):
+        vlss_mn = np.inf
+        vacc_mx = 0.0
+        state_dict_early_model = None
+        curr_step = 0
+
+        dur = []
+        for epoch in range(n_epochs):
+            t0 = time.time()
+
+            # TRAIN
+            model.train()
+            train_logits = model(data)
+            train_logp = F.log_softmax(train_logits, 1)
+            train_loss = F.nll_loss(train_logp[data.train_mask], data.y[data.train_mask])
+            train_pred = train_logp.argmax(dim=1)
+            train_acc = torch.eq(train_pred[data.train_mask], data.y[data.train_mask]).float().mean().item()
             optimizer.zero_grad()
-            out = model(data)
-            loss = F.nll_loss(out[data.train_mask], data.y[data.train_mask])
-            loss.backward()
+            train_loss.backward()
             optimizer.step()
-            if epoch % 100 == 0:
-                print('Epoch {0}: {1}'.format(epoch, loss.item()))
+
+            # VALIDATE
+            model.eval()
+            with torch.no_grad():
+                val_logits = model(data)
+                val_logp = F.log_softmax(val_logits, 1)
+                val_loss = F.nll_loss(val_logp[data.val_mask], data.y[data.val_mask]).item()  # TODO val or train?
+                val_pred = val_logp.argmax(dim=1)
+                val_acc = torch.eq(val_pred[data.val_mask], data.y[data.val_mask]).float().mean().item()
+
+            lr_scheduler.step(val_loss)
+            dur.append(time.time() - t0)
+
+            logger.info(
+                "Epoch {:05d} | Train Loss {:.4f} | Train Acc {:.4f} | Val Loss {:.4f} | Val Acc {:.4f} | Time(s) {:.4f}".format(
+                    epoch, train_loss.item(), train_acc, val_loss, val_acc, sum(dur) / len(dur)))
+
+            # Adapted from https://github.com/PetarV-/GAT/blob/master/execute_cora.py
+            if val_acc >= vacc_mx or val_loss <= vlss_mn:
+                if val_acc >= vacc_mx and val_loss <= vlss_mn:
+                    state_dict_early_model = model.state_dict()
+                vacc_mx = np.max((val_acc, vacc_mx))
+                vlss_mn = np.min((val_loss, vlss_mn))
+                curr_step = 0
+            else:
+                curr_step += 1
+                if curr_step >= epoch_patience:
+                    break
 
         """
-        Evaluate model.
+        Evaluate Model.
         """
+        model.load_state_dict(state_dict_early_model)
         model.eval()
-        pred = model(data).argmax(dim=1)
-        correct = (pred[data.val_mask] == data.y[data.val_mask]).sum()
-        acc = int(correct) / int(data.val_mask.sum())
-        print(f'Accuracy: {acc:.4f}')
-
-        """
-        Save prediction results.
-        """
-        # preds = pred[data.test_mask]
-        # np.savetxt('submission.txt', preds, fmt='%d')
+        with torch.no_grad():
+            test_logits = model(data)
+            test_logp = F.log_softmax(test_logits, 1)
+            test_pred = test_logp.argmax(dim=1)[data.test_mask]
+            np.savetxt(f'logs/submission_{run_id}.txt', test_pred, fmt='%d')
