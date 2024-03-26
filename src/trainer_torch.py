@@ -35,10 +35,8 @@ class TrainerTorch:
         # logging
         self.logger = logging.getLogger()
         self.logger.setLevel(logging.INFO)
-        fileHandler = logging.FileHandler(f"logs/{run_id}.log")
-        self.logger.addHandler(fileHandler)
-        consoleHandler = logging.StreamHandler()
-        self.logger.addHandler(consoleHandler)
+        self.logger.addHandler(logging.FileHandler(f"logs/{run_id}.log"))
+        self.logger.addHandler(logging.StreamHandler())
 
     def run(self, train_data, lr=0.01, weight_decay=5e-4, n_hidden=16, n_epochs=5000, lr_decay=0.8, lr_patience=50, epoch_patience=500):
         # graph convolutional network model
@@ -48,13 +46,8 @@ class TrainerTorch:
             num_classes=int((train_data.y.max() + 1).item())
         ).to(self.device)
 
-        # optimizer
+        # optimizer & scheduler
         optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
-        # optimizer = torch.optim.Adam([
-        #         {'params': model.conv1.parameters(), 'weight_decay': weight_decay},
-        #         {'params': model.conv2.parameters(), 'weight_decay': weight_decay}
-        #     ], lr=lr
-        # )
         lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizer=optimizer,
             factor=lr_decay,

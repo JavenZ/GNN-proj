@@ -64,7 +64,7 @@ def train_torch(labels, features, adj, adj_csr, idx_train, idx_test, cora_data):
         test_mask=torch.zeros(x.shape[0]).type(torch.bool),
     )
     # create data splits
-    transform = RandomNodeSplit(num_test=25, num_val=50)
+    transform = RandomNodeSplit(num_test=50, num_val=50)
     t = transform(train_data)
     train_data.x = x
     train_data.train_mask[idx_train] = t.train_mask
@@ -84,17 +84,17 @@ def train_torch(labels, features, adj, adj_csr, idx_train, idx_test, cora_data):
     """
     Run Trainer.
     """
-    run_id = 40
+    run_id = 48
     trainer = TrainerTorch(run_id=run_id,)
     y_pred = trainer.run(
         train_data=train_data,
-        lr=0.1,
+        lr=0.001,
         weight_decay=5e-4,
-        n_hidden=16,
+        n_hidden=64,
         n_epochs=5000,
         lr_decay=0.80,
         lr_patience=50,
-        epoch_patience=500,
+        epoch_patience=100,
     )
     # sort predictions by correct index & save results
     y_pred = y_pred[idx_test]
