@@ -24,7 +24,7 @@ def train_torch(labels, features, adj, adj_csr, idx_train, idx_test, cora_data):
     """
     Preprocess data.
     """
-    x = features
+    # x = features
 
     # dimensionality reduction
     # scaler = StandardScaler()
@@ -36,14 +36,15 @@ def train_torch(labels, features, adj, adj_csr, idx_train, idx_test, cora_data):
     # print(x.shape)
 
     # graph aggregated spacial filter
-    # x = []
-    # for i in range(len(features)):
-    #     neigh_feats = features[adj_csr[i].astype(bool)]
-    #     agg_feats = features[i] + neigh_feats.mean(axis=0)  # weighed-mean aggregation
-    #     x.append(agg_feats)
-    # x = np.array(x)
-    # scaler = StandardScaler()
-    # x = scaler.fit_transform(x)
+    x = []
+    for i in range(len(features)):
+        neigh_feats = features[adj_csr[i].astype(bool)]
+        agg_feats = features[i] + neigh_feats.mean(axis=0)  # weighed-mean aggregation
+        # agg_feats = features[i] + neigh_feats.sum(axis=0)  # weighed-sum aggregation
+        x.append(agg_feats)
+    x = np.array(x)
+    scaler = StandardScaler()
+    x = scaler.fit_transform(x)
 
     # format data
     x = torch.from_numpy(x).type(torch.float)
@@ -63,12 +64,12 @@ def train_torch(labels, features, adj, adj_csr, idx_train, idx_test, cora_data):
         test_mask=torch.zeros(x.shape[0]).type(torch.bool),
     )
     # create data splits
-    transform = RandomNodeSplit(num_test=0, num_val=50)
+    transform = RandomNodeSplit(num_test=25, num_val=50)
     t = transform(train_data)
     train_data.x = x
     train_data.train_mask[idx_train] = t.train_mask
     train_data.val_mask[idx_train] = t.val_mask
-    # train_data.test_mask[idx_test] = t.test_mask
+    train_data.test_mask[idx_train] = t.test_mask
 
     """
     Synthesize additional training data.
@@ -83,7 +84,7 @@ def train_torch(labels, features, adj, adj_csr, idx_train, idx_test, cora_data):
     """
     Run Trainer.
     """
-    run_id = 23
+    run_id = 40
     trainer = TrainerTorch(run_id=run_id,)
     y_pred = trainer.run(
         train_data=train_data,
@@ -91,15 +92,16 @@ def train_torch(labels, features, adj, adj_csr, idx_train, idx_test, cora_data):
         weight_decay=5e-4,
         n_hidden=16,
         n_epochs=5000,
-        lr_decay=0.95,
+        lr_decay=0.80,
         lr_patience=50,
-        epoch_patience=250,
+        epoch_patience=500,
     )
     # sort predictions by correct index & save results
     y_pred = y_pred[idx_test]
     trainer.logger.info(
         f"val_mask: {train_data.val_mask.sum().item()}, train_mask: {train_data.train_mask.sum().item()}, test_mask: {train_data.test_mask.sum().item()}"
     )
+    trainer.logger.info(f"{x.numpy().shape}")
     print(f"y_pred[:10] = {y_pred[:10].tolist()}")
     print(f"y_real[:10] = [1, 2, 2, 1, 1, 2, 3, 1, 1, 1]")
     np.savetxt(f'logs/submission_{run_id}.txt', y_pred, fmt='%d')

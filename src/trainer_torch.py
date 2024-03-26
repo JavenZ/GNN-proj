@@ -115,6 +115,15 @@ class TrainerTorch:
         """
         Evaluate Model.
         """
+        model.eval()
+        with torch.no_grad():
+            test_logits = model(train_data)
+            test_logp = F.log_softmax(test_logits, 1)
+            test_loss = F.nll_loss(test_logp[train_data.test_mask], train_data.y[train_data.test_mask]).item()
+            test_pred = test_logp.argmax(dim=1)
+            test_acc = torch.eq(test_pred[train_data.test_mask], train_data.y[train_data.test_mask]).float().mean().item()
+            self.logger.info("Test Loss {:.4f} | Test Acc {:.4f}".format(test_loss, test_acc))
+
         self.logger.info(
             f"lr={lr}, weight_decay={weight_decay}, n_hidden={n_hidden}, n_epochs={n_epochs}, lr_decay={lr_decay}, lr_patience={lr_patience}, epoch_patience={epoch_patience}"
         )
