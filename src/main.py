@@ -63,7 +63,7 @@ def train_torch(labels, features, adj, adj_csr, idx_train, idx_test, cora_data):
         test_mask=torch.zeros(x.shape[0]).type(torch.bool),
     )
     # create data splits
-    transform = RandomNodeSplit(num_test=0, num_val=100)
+    transform = RandomNodeSplit(num_test=0, num_val=50)
     t = transform(train_data)
     train_data.x = x
     train_data.train_mask[idx_train] = t.train_mask
@@ -83,10 +83,9 @@ def train_torch(labels, features, adj, adj_csr, idx_train, idx_test, cora_data):
     """
     Run Trainer.
     """
-    run_id = 11
-    trainer = TrainerTorch()
+    run_id = 23
+    trainer = TrainerTorch(run_id=run_id,)
     y_pred = trainer.run(
-        run_id=run_id,
         train_data=train_data,
         lr=0.1,
         weight_decay=5e-4,
@@ -94,11 +93,13 @@ def train_torch(labels, features, adj, adj_csr, idx_train, idx_test, cora_data):
         n_epochs=5000,
         lr_decay=0.95,
         lr_patience=50,
-        epoch_patience=500,
+        epoch_patience=250,
     )
     # sort predictions by correct index & save results
     y_pred = y_pred[idx_test]
-    print(f"val_mask: {train_data.val_mask.sum().item()}, train_mask: {train_data.train_mask.sum().item()}, test_mask: {train_data.test_mask.sum().item()}")
+    trainer.logger.info(
+        f"val_mask: {train_data.val_mask.sum().item()}, train_mask: {train_data.train_mask.sum().item()}, test_mask: {train_data.test_mask.sum().item()}"
+    )
     print(f"y_pred[:10] = {y_pred[:10].tolist()}")
     print(f"y_real[:10] = [1, 2, 2, 1, 1, 2, 3, 1, 1, 1]")
     np.savetxt(f'logs/submission_{run_id}.txt', y_pred, fmt='%d')

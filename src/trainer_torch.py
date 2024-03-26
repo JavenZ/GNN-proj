@@ -28,10 +28,19 @@ class GCN(torch.nn.Module):
 
 
 class TrainerTorch:
-    def __init__(self):
+    def __init__(self, run_id):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.run_id = run_id
 
-    def run(self, run_id, train_data, lr=0.01, weight_decay=5e-4, n_hidden=16, n_epochs=5000, lr_decay=0.8, lr_patience=50, epoch_patience=500):
+        # logging
+        self.logger = logging.getLogger()
+        self.logger.setLevel(logging.INFO)
+        fileHandler = logging.FileHandler(f"logs/{run_id}.log")
+        self.logger.addHandler(fileHandler)
+        consoleHandler = logging.StreamHandler()
+        self.logger.addHandler(consoleHandler)
+
+    def run(self, train_data, lr=0.01, weight_decay=5e-4, n_hidden=16, n_epochs=5000, lr_decay=0.8, lr_patience=50, epoch_patience=500):
         # graph convolutional network model
         model = GCN(
             num_node_features=train_data.x.shape[1],
@@ -51,14 +60,6 @@ class TrainerTorch:
             factor=lr_decay,
             patience=lr_patience
         )
-
-        # logging
-        logger = logging.getLogger()
-        logger.setLevel(logging.INFO)
-        fileHandler = logging.FileHandler(f"logs/{run_id}.log")
-        logger.addHandler(fileHandler)
-        consoleHandler = logging.StreamHandler()
-        logger.addHandler(consoleHandler)
 
         """
         Train Model.
@@ -95,7 +96,7 @@ class TrainerTorch:
 
             lr_scheduler.step(val_loss)
             dur.append(time.time() - t0)
-            logger.info(
+            self.logger.info(
                 "Epoch {:05d} | Train Loss {:.4f} | Train Acc {:.4f} | Val Loss {:.4f} | Val Acc {:.4f} | Time(s) {:.4f}".format(
                     epoch, train_loss.item(), train_acc, val_loss, val_acc, sum(dur) / len(dur)))
 
@@ -114,6 +115,9 @@ class TrainerTorch:
         """
         Evaluate Model.
         """
+        self.logger.info(
+            f"lr={lr}, weight_decay={weight_decay}, n_hidden={n_hidden}, n_epochs={n_epochs}, lr_decay={lr_decay}, lr_patience={lr_patience}, epoch_patience={epoch_patience}"
+        )
         model.load_state_dict(state_dict_early_model)
         model.eval()
         with torch.no_grad():
