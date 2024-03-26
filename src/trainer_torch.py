@@ -79,6 +79,7 @@ class TrainerTorch:
             train_loss = F.nll_loss(train_logp[data.train_mask], data.y[data.train_mask])
             train_pred = train_logp.argmax(dim=1)
             train_acc = torch.eq(train_pred[data.train_mask], data.y[data.train_mask]).float().mean().item()
+
             optimizer.zero_grad()
             train_loss.backward()
             optimizer.step()
@@ -88,13 +89,12 @@ class TrainerTorch:
             with torch.no_grad():
                 val_logits = model(data)
                 val_logp = F.log_softmax(val_logits, 1)
-                val_loss = F.nll_loss(val_logp[data.val_mask], data.y[data.val_mask]).item()  # TODO val or train?
+                val_loss = F.nll_loss(val_logp[data.val_mask], data.y[data.val_mask]).item()
                 val_pred = val_logp.argmax(dim=1)
                 val_acc = torch.eq(val_pred[data.val_mask], data.y[data.val_mask]).float().mean().item()
 
             lr_scheduler.step(val_loss)
             dur.append(time.time() - t0)
-
             logger.info(
                 "Epoch {:05d} | Train Loss {:.4f} | Train Acc {:.4f} | Val Loss {:.4f} | Val Acc {:.4f} | Time(s) {:.4f}".format(
                     epoch, train_loss.item(), train_acc, val_loss, val_acc, sum(dur) / len(dur)))
@@ -119,5 +119,6 @@ class TrainerTorch:
         with torch.no_grad():
             test_logits = model(data)
             test_logp = F.log_softmax(test_logits, 1)
-            test_pred = test_logp.argmax(dim=1)[data.test_mask]
-            np.savetxt(f'logs/submission_{run_id}.txt', test_pred, fmt='%d')
+            # test_pred = test_logp.argmax(dim=1)[data.test_mask]
+            test_pred = test_logp.argmax(dim=1)
+            return test_pred

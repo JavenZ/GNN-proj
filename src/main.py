@@ -25,16 +25,24 @@ def train_torch(labels, features, adj, adj_csr, idx_train, idx_test, cora_data):
     """
     x = features
 
-    # scale
-    scaler = StandardScaler()
-    # x = scaler.fit_transform(x)
-
     # dimensionality reduction
     # pca = PCA(.95)
     # print(x.shape)
     # pca.fit(x)
     # x = pca.transform(x)
     # print(x.shape)
+
+    # graph aggregated spacial filter
+    # x = []
+    # for i in range(len(features)):
+    #     neigh_feats = features[adj_csr[i].astype(bool)]
+    #     agg_feats = features[i] + neigh_feats.mean(axis=0)  # weighed-mean aggregation
+    #     x.append(agg_feats)
+    # x = np.array(x)
+
+    # scale
+    # scaler = StandardScaler()
+    # x = scaler.fit_transform(x)
 
     # format data
     x = torch.from_numpy(x).type(torch.float)
@@ -46,11 +54,16 @@ def train_torch(labels, features, adj, adj_csr, idx_train, idx_test, cora_data):
     """
     # np.random.shuffle(idx_train)
     train_mask = np.zeros((x.shape[0],)).astype(bool)
-    train_mask[idx_train[:450]] = 1
+    train_mask[idx_train[:400]] = True
+    # train_mask[idx_train] = True
+
     val_mask = np.zeros((x.shape[0],)).astype(bool)
-    val_mask[idx_train[450:]] = 1
-    test_mask = torch.zeros((x.shape[0],)).type(torch.bool)
-    test_mask[idx_test] = 1
+    val_mask[idx_train[400:]] = True
+    # val_mask[idx_train] = True
+
+    # test_mask = torch.zeros((x.shape[0],)).type(torch.bool)
+    test_mask = np.zeros((x.shape[0],)).astype(bool)
+    test_mask[idx_test] = True
 
     """
     Construct Torch data objects.
@@ -72,7 +85,6 @@ def train_torch(labels, features, adj, adj_csr, idx_train, idx_test, cora_data):
     #     val_mask=data.val_mask.copy()
     # )
     # joined_data.val_mask.resize(joined_data.x.shape[0])
-    # print(joined_data)
 
     """
     Synthesize additional training data.
@@ -87,11 +99,26 @@ def train_torch(labels, features, adj, adj_csr, idx_train, idx_test, cora_data):
     """
     Run Trainer.
     """
+    print(data.val_mask.sum().item(), data.train_mask.sum().item(), data.test_mask.sum().item())
+    run_id = 7
     trainer = TrainerTorch()
-    trainer.run(
-        run_id=2,
+    y_pred = trainer.run(
+        run_id=run_id,
         data=data,
+        lr=0.1,
+        weight_decay=5e-4,
+        n_hidden=16,
+        n_epochs=5000,
+        lr_decay=0.8,
+        lr_patience=50,
+        epoch_patience=500,
     )
+    # sort predictions by correct index & save results
+    y_pred = y_pred[idx_test]
+    # print(f"cora_y[:10] = {cora_data.y[idx_test[:10]].tolist()}")
+    print(f"y_pred[:10] = {y_pred[:10].tolist()}")
+    print(f"y_real[:10] = [1, 2, 2, 1, 1, 2, 3, 1, 1, 1]")
+    np.savetxt(f'logs/submission_{run_id}.txt', y_pred, fmt='%d')
 
 
 def train_neat(labels, features, adj, adj_csr, idx_train, idx_test, cora_data):
