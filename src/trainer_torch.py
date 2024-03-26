@@ -31,12 +31,12 @@ class TrainerTorch:
     def __init__(self):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    def run(self, run_id, data, lr=0.01, weight_decay=5e-4, n_hidden=16, n_epochs=5000, lr_decay=0.8, lr_patience=50, epoch_patience=500):
+    def run(self, run_id, train_data, lr=0.01, weight_decay=5e-4, n_hidden=16, n_epochs=5000, lr_decay=0.8, lr_patience=50, epoch_patience=500):
         # graph convolutional network model
         model = GCN(
-            num_node_features=data.x.shape[1],
+            num_node_features=train_data.x.shape[1],
             num_hidden=n_hidden,
-            num_classes=int((data.y.max() + 1).item())
+            num_classes=int((train_data.y.max() + 1).item())
         ).to(self.device)
 
         # optimizer
@@ -74,11 +74,11 @@ class TrainerTorch:
 
             # TRAIN
             model.train()
-            train_logits = model(data)
+            train_logits = model(train_data)
             train_logp = F.log_softmax(train_logits, 1)
-            train_loss = F.nll_loss(train_logp[data.train_mask], data.y[data.train_mask])
+            train_loss = F.nll_loss(train_logp[train_data.train_mask], train_data.y[train_data.train_mask])
             train_pred = train_logp.argmax(dim=1)
-            train_acc = torch.eq(train_pred[data.train_mask], data.y[data.train_mask]).float().mean().item()
+            train_acc = torch.eq(train_pred[train_data.train_mask], train_data.y[train_data.train_mask]).float().mean().item()
 
             optimizer.zero_grad()
             train_loss.backward()
@@ -87,11 +87,11 @@ class TrainerTorch:
             # VALIDATE
             model.eval()
             with torch.no_grad():
-                val_logits = model(data)
+                val_logits = model(train_data)
                 val_logp = F.log_softmax(val_logits, 1)
-                val_loss = F.nll_loss(val_logp[data.val_mask], data.y[data.val_mask]).item()
+                val_loss = F.nll_loss(val_logp[train_data.val_mask], train_data.y[train_data.val_mask]).item()
                 val_pred = val_logp.argmax(dim=1)
-                val_acc = torch.eq(val_pred[data.val_mask], data.y[data.val_mask]).float().mean().item()
+                val_acc = torch.eq(val_pred[train_data.val_mask], train_data.y[train_data.val_mask]).float().mean().item()
 
             lr_scheduler.step(val_loss)
             dur.append(time.time() - t0)
@@ -117,8 +117,7 @@ class TrainerTorch:
         model.load_state_dict(state_dict_early_model)
         model.eval()
         with torch.no_grad():
-            test_logits = model(data)
-            test_logp = F.log_softmax(test_logits, 1)
-            # test_pred = test_logp.argmax(dim=1)[data.test_mask]
-            test_pred = test_logp.argmax(dim=1)
-            return test_pred
+            eval_logits = model(train_data)
+            eval_logp = F.log_softmax(eval_logits, 1)
+            eval_pred = eval_logp.argmax(dim=1)
+            return eval_pred

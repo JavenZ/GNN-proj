@@ -11,12 +11,13 @@ from sklearn.model_selection import train_test_split
 from trainer_neat import TrainerNEAT
 from trainer_torch import TrainerTorch
 from torch_geometric.data import Data
-from torch_geometric.utils import from_scipy_sparse_matrix
+from torch_geometric.utils import from_scipy_sparse_matrix, mask_to_index, unbatch_edge_index, to_edge_index
 from reporter import ResultsReporter
 from torch_geometric.datasets import Planetoid
 import torch_geometric.transforms as T
 from ydata_synthetic.synthesizers.regular import RegularSynthesizer
 from ydata_synthetic.synthesizers import ModelParameters, TrainParameters
+from torch_geometric.transforms import RandomLinkSplit, RandomNodeSplit
 
 
 def train_torch(labels, features, adj, adj_csr, idx_train, idx_test, cora_data):
@@ -26,6 +27,8 @@ def train_torch(labels, features, adj, adj_csr, idx_train, idx_test, cora_data):
     x = features
 
     # dimensionality reduction
+    # scaler = StandardScaler()
+    # x = scaler.fit_transform(x)
     # pca = PCA(.95)
     # print(x.shape)
     # pca.fit(x)
@@ -39,52 +42,33 @@ def train_torch(labels, features, adj, adj_csr, idx_train, idx_test, cora_data):
     #     agg_feats = features[i] + neigh_feats.mean(axis=0)  # weighed-mean aggregation
     #     x.append(agg_feats)
     # x = np.array(x)
-
-    # scale
     # scaler = StandardScaler()
     # x = scaler.fit_transform(x)
 
     # format data
     x = torch.from_numpy(x).type(torch.float)
-    y = torch.from_numpy(np.resize(labels, (x.shape[0],))).type(torch.long)
+    y = torch.zeros(x.shape[0]).type(torch.long)
+    y[idx_train] = torch.from_numpy(labels).type(torch.long)
     edges = from_scipy_sparse_matrix(adj)
 
     """
-    Create data splits.
+    Construct Torch data object(s).
     """
-    # np.random.shuffle(idx_train)
-    train_mask = np.zeros((x.shape[0],)).astype(bool)
-    train_mask[idx_train[:400]] = True
-    # train_mask[idx_train] = True
-
-    val_mask = np.zeros((x.shape[0],)).astype(bool)
-    val_mask[idx_train[400:]] = True
-    # val_mask[idx_train] = True
-
-    # test_mask = torch.zeros((x.shape[0],)).type(torch.bool)
-    test_mask = np.zeros((x.shape[0],)).astype(bool)
-    test_mask[idx_test] = True
-
-    """
-    Construct Torch data objects.
-    """
-    data = Data(
-        x=x,
+    train_data = Data(
+        x=x[idx_train],
         y=y,
         edge_index=edges[0],
-        train_mask=train_mask,
-        val_mask=val_mask,
-        test_mask=test_mask,
+        train_mask=torch.zeros(x.shape[0]).type(torch.bool),
+        val_mask=torch.zeros(x.shape[0]).type(torch.bool),
+        test_mask=torch.zeros(x.shape[0]).type(torch.bool),
     )
-
-    # joined_data = Data(
-    #     x=torch.concatenate((data.x, cora_data.x)),
-    #     y=torch.concatenate((data.y, cora_data.y)),
-    #     edge_index=torch.concatenate((data.edge_index, cora_data.edge_index), dim=1),
-    #     train_mask=np.concatenate((data.train_mask, cora_data.train_mask)),
-    #     val_mask=data.val_mask.copy()
-    # )
-    # joined_data.val_mask.resize(joined_data.x.shape[0])
+    # create data splits
+    transform = RandomNodeSplit(num_test=0, num_val=100)
+    t = transform(train_data)
+    train_data.x = x
+    train_data.train_mask[idx_train] = t.train_mask
+    train_data.val_mask[idx_train] = t.val_mask
+    # train_data.test_mask[idx_test] = t.test_mask
 
     """
     Synthesize additional training data.
@@ -99,23 +83,22 @@ def train_torch(labels, features, adj, adj_csr, idx_train, idx_test, cora_data):
     """
     Run Trainer.
     """
-    print(data.val_mask.sum().item(), data.train_mask.sum().item(), data.test_mask.sum().item())
-    run_id = 7
+    run_id = 11
     trainer = TrainerTorch()
     y_pred = trainer.run(
         run_id=run_id,
-        data=data,
+        train_data=train_data,
         lr=0.1,
         weight_decay=5e-4,
         n_hidden=16,
         n_epochs=5000,
-        lr_decay=0.8,
+        lr_decay=0.95,
         lr_patience=50,
         epoch_patience=500,
     )
     # sort predictions by correct index & save results
     y_pred = y_pred[idx_test]
-    # print(f"cora_y[:10] = {cora_data.y[idx_test[:10]].tolist()}")
+    print(f"val_mask: {train_data.val_mask.sum().item()}, train_mask: {train_data.train_mask.sum().item()}, test_mask: {train_data.test_mask.sum().item()}")
     print(f"y_pred[:10] = {y_pred[:10].tolist()}")
     print(f"y_real[:10] = [1, 2, 2, 1, 1, 2, 3, 1, 1, 1]")
     np.savetxt(f'logs/submission_{run_id}.txt', y_pred, fmt='%d')
