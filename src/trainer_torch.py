@@ -3,6 +3,7 @@ import os
 import time
 import torch
 import torch.nn.functional as F
+from sklearn.model_selection import StratifiedKFold
 from torch_geometric.nn import GCNConv
 from torch_geometric.utils import from_scipy_sparse_matrix
 from torch_geometric.data import Data
@@ -127,3 +128,17 @@ class TrainerTorch:
             eval_logp = F.log_softmax(eval_logits, 1)
             eval_pred = eval_logp.argmax(dim=1)
             return eval_pred
+
+    def k_fold(self, dataset, n_folds: int):
+        skf = StratifiedKFold(n_folds, shuffle=True, random_state=12345)
+        test_indices, train_indices = [], []
+        for _, idx in skf.split(torch.zeros(len(dataset)), dataset.data.y):
+            test_indices.append(torch.from_numpy(idx).to(torch.long))
+        val_indices = [test_indices[i - 1] for i in range(n_folds)]
+
+        for i in range(n_folds):
+            train_mask = torch.ones(len(dataset), dtype=torch.bool)
+            train_mask[test_indices[i]] = 0
+            train_mask[val_indices[i]] = 0
+            train_indices.append(train_mask.nonzero(as_tuple=False).view(-1))
+        return train_indices, test_indices, val_indices
