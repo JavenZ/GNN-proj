@@ -95,7 +95,7 @@ class TrainerTorch:
         val_losses, accs, durations = [], [], []
         x_len = len(data.idx_train)
 
-        # train & evaluate using k-folds
+        # train model across k-folds
         for fold, (train_idx, test_idx, val_idx) in enumerate(zip(*self.k_fold(data, n_folds))):
 
             # prepare fold data masks
@@ -110,15 +110,17 @@ class TrainerTorch:
 
             model.to(self.device).reset_parameters()
 
-            # optimizer & scheduler
+            # optimizer
             optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
+
+            # TODO learning rate scheduler
             lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
                 optimizer=optimizer,
                 factor=lr_decay,
                 patience=lr_patience
             )
 
-            # train & evaluate model for this fold
+            # train model for each epoch in this fold
             t_start = time.perf_counter()
             for epoch in range(1, n_epochs + 1):
                 train_loss = self.train(model, optimizer, data)
@@ -136,6 +138,7 @@ class TrainerTorch:
                     }
                     self.logger.info(eval_info)
 
+                # decay learning rate
                 if epoch % lr_step_size == 0:
                     for param_group in optimizer.param_groups:
                         param_group['lr'] = lr_decay * param_group['lr']
@@ -146,6 +149,7 @@ class TrainerTorch:
             elif hasattr(torch.backends, 'mps') and torch.backends.mps.is_available():
                 torch.mps.synchronize()
 
+            # fold duration
             t_end = time.perf_counter()
             durations.append(t_end - t_start)
 
