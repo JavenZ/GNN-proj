@@ -32,7 +32,7 @@ class TrainerTorch:
         # logging
         self.logger = logging.getLogger()
         self.logger.setLevel(logging.INFO)
-        self.logger.addHandler(logging.FileHandler(f"logs/{run_id}.log"))
+        self.logger.addHandler(logging.FileHandler(f"logs/{run_id}/results.log"))
         self.logger.addHandler(logging.StreamHandler())
 
     def run(self, data):
@@ -43,7 +43,7 @@ class TrainerTorch:
         best_pred = None
 
         # log run parameters
-        self.logger.info(f"Run({self.run_id}) parameters:\n\tn_epochs={self.n_epochs},"
+        self.logger.info(f"# Run({self.run_id}) parameters:\n\tn_epochs={self.n_epochs},"
                          f"\n\tlr={self.lr},"
                          f"\n\tlr_decay={self.lr_decay},"
                          f"\n\tweight_decay={self.weight_decay},"
@@ -79,9 +79,9 @@ class TrainerTorch:
             if loss < best_result[0]:
                 best_result = (loss, acc, std)
                 best_pred = self.predict(model, data)
-                best_desc = f"Best Model({model_idx}) results: accuracy={best_result[1]:.3f} +/- {best_result[2]:.3f}, n_layers={n_layers}, n_hidden={n_hidden}"
+                best_desc = f"Best Model({model_idx}) results: accuracy={best_result[1]:.3f}, std={best_result[2]:.3f}, n_layers={n_layers}, n_hidden={n_hidden}"
 
-            desc = f"accuracy={acc:.3f} +/- {std:.3f}, n_layers={n_layers}, n_hidden={n_hidden}"
+            desc = f"accuracy={acc:.3f}, std={std:.3f}, n_layers={n_layers}, n_hidden={n_hidden}"
             self.logger.info(f"Model({model_idx}) results: {desc}")
             self.logger.info(f'{best_desc}\n')
             results += [f'{model}({model_idx}): {desc}']

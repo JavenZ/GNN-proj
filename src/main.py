@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import pandas as pd
 import json
@@ -86,7 +88,7 @@ def train_torch():
     """
     Run Trainer.
     """
-    run_id = 50
+    run_id = find_run_idx()
     trainer = TrainerTorch(
         run_id=run_id,
         lr=0.001,
@@ -103,7 +105,7 @@ def train_torch():
     trainer.logger.info(f"{x.numpy().shape}")
     print(f"y_pred[:10] = {y_pred[:10].tolist()}")
     print(f"y_real[:10] = [1, 2, 2, 1, 1, 2, 3, 1, 1, 1]")
-    np.savetxt(f'logs/submission_{run_id}.txt', y_pred, fmt='%d')
+    np.savetxt(f'logs/{run_id}/submission.txt', y_pred, fmt='%d')
 
 
 def train_neat():
@@ -144,6 +146,17 @@ def train_neat():
     )
     trainer = TrainerNEAT(cfg, x_train, labels, x_test)
     trainer.run()
+
+
+def find_run_idx():
+    max_idx = -1
+    for _dir in os.listdir('logs/'):
+        idx = int(_dir)
+        max_idx = max(max_idx, idx)
+    run_idx = max_idx + 1
+    if not os.path.exists(f'logs/{run_idx}'):
+        os.mkdir(f'logs/{run_idx}')
+    return run_idx
 
 
 if __name__ == "__main__":
