@@ -1,5 +1,4 @@
 import os
-
 import numpy as np
 import pandas as pd
 import json
@@ -12,10 +11,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from trainer_neat import TrainerNEAT
 from trainer_torch import TrainerTorch
-from trainer_geotorch import TrainerGTorch
 from torch_geometric.data import Data, Dataset
 from torch_geometric.utils import from_scipy_sparse_matrix, mask_to_index, unbatch_edge_index, to_edge_index
-from reporter import ResultsReporter
 from torch_geometric.datasets import Planetoid
 import torch_geometric.transforms as T
 from ydata_synthetic.synthesizers.regular import RegularSynthesizer
@@ -93,7 +90,7 @@ def train_torch():
         run_id=run_id,
         lr=0.001,
         weight_decay=5e-4,
-        n_epochs=50,
+        n_epochs=500,
         lr_decay=0.80,
         lr_patience=50,
         epoch_patience=100,

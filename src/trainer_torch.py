@@ -25,7 +25,7 @@ class TrainerTorch:
         self.epoch_patience = epoch_patience
 
         # cross-validation parameters
-        self.layers = [2, 3, 4, 5]
+        self.layers = [2]  # 2, 3, 4, 5
         self.hiddens = [16, 32, 64, 128]
         self.net = GCN
 
@@ -70,7 +70,7 @@ class TrainerTorch:
                 n_epochs=self.n_epochs,
                 lr=self.lr,
                 lr_decay=self.lr_decay,
-                lr_step_size=50,
+                lr_step_size=25,
                 lr_patience=self.lr_patience,
                 weight_decay=self.weight_decay,
             )
@@ -127,8 +127,12 @@ class TrainerTorch:
                 val_losses.append(self.eval_loss(model, data))
                 accs.append(self.eval_accuracy(model, data))
 
-                # log epoch results
-                if epoch % 10 == 0:
+                if epoch % lr_step_size == 0:
+                    # decay learning rate
+                    for param_group in optimizer.param_groups:
+                        param_group['lr'] = lr_decay * param_group['lr']
+
+                    # log epoch results
                     eval_info = {
                         'fold': fold,
                         'epoch': epoch,
@@ -137,11 +141,6 @@ class TrainerTorch:
                         'test_acc': accs[-1],
                     }
                     self.logger.info(eval_info)
-
-                # decay learning rate
-                if epoch % lr_step_size == 0:
-                    for param_group in optimizer.param_groups:
-                        param_group['lr'] = lr_decay * param_group['lr']
 
             # cuda optimization
             if torch.cuda.is_available():
