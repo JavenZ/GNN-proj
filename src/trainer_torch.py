@@ -8,27 +8,30 @@ from torch import tensor
 from torch_geometric.utils import index_to_mask
 from models import GCN, GCN_2L
 from itertools import product
+from sklearn.model_selection import ParameterGrid
 
 
 class TrainerTorch:
-    def __init__(self, run_id, lr=0.01, weight_decay=5e-4, n_epochs=500, lr_decay=0.8, lr_patience=50, decay_steps=50):
+    def __init__(self, run_id, weight_decay=5e-4, lr_decay=0.8, lr_patience=50, decay_steps=50):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
         # run parameters
         self.run_id = run_id
-        self.lr = lr
         self.lr_decay = lr_decay
         self.lr_patience = lr_patience
         self.weight_decay = weight_decay
-        self.n_epochs = n_epochs
         # self.epoch_patience = epoch_patience
         self.decay_steps = decay_steps
         self.n_folds = 10
 
         # cross-validation parameters
-        self.layers = [2]  # 2, 3, 4, 5
-        self.hiddens = [16, 32, 64, 128]  # [16, 32, 64, 128, 256]
-        self.net = GCN
+        self.cv_params = {
+            'layer': [2],  # 2, 3, 4, 5
+            'hidden': [16, 32, 64, 128],  # [16, 32, 64, 128, 256]
+            'net': [GCN],
+            'lr': list(np.logspace(-4, -2, num=3)),
+            'epoch': [50, 150, 250, 500],
+        }
 
         # logging
         self.logger = logging.getLogger()
@@ -44,35 +47,32 @@ class TrainerTorch:
         best_pred = None
 
         # log run parameters
-        self.logger.info(f"# Run({self.run_id}) parameters:"
-                         f"\n\tn_epochs={self.n_epochs},"
-                         f"\n\tlr={self.lr},"
+        self.logger.info(f"# Run({self.run_id}):"
+                         f"\n\tcv_params={self.cv_params},"
                          f"\n\tlr_decay={self.lr_decay},"
                          f"\n\tdecay_steps={self.decay_steps},"
                          f"\n\tweight_decay={self.weight_decay},"
                          f"\n\tn_folds={self.n_folds},"
-                         f"\n\tcv_layers={self.layers},"
-                         f"\n\tcv_hiddens={self.hiddens},"
-                         f"\n\tcv_models={self.net}\n"
+                         f"\n"
                          )
 
         # run & evaluate each model configuration
-        for model_idx, (n_layers, n_hidden) in enumerate(product(self.layers, self.hiddens)):
+        for model_idx, cv in enumerate(list(ParameterGrid(self.cv_params))):
             # graph convolutional network model
-            model = self.net(
+            model = cv['net'](
                 data=data,
-                n_hidden=n_hidden,
-                n_layers=n_layers,
+                n_hidden=cv['hidden'],
+                n_layers=cv['layer'],
             )
-            self.logger.info(f"# Evaluating model({model_idx}): n_layers={n_layers}, n_hidden={n_hidden}")
+            self.logger.info(f"# Evaluating model({model_idx}): {cv}")
 
             # cross-validate & train model
             loss, acc, std = self.cross_validation(
                 data,
                 model,
                 n_folds=self.n_folds,
-                n_epochs=self.n_epochs,
-                lr=self.lr,
+                n_epochs=cv['epoch'],
+                lr=cv['lr'],
                 lr_decay=self.lr_decay,
                 lr_step_size=self.decay_steps,
                 lr_patience=self.lr_patience,
@@ -83,9 +83,9 @@ class TrainerTorch:
             if loss < best_result[0]:
                 best_result = (loss, acc, std)
                 best_pred = self.predict(model, data)
-                best_desc = f"Best Model({model_idx}) results: accuracy={best_result[1]:.3f}, std={best_result[2]:.3f}, n_layers={n_layers}, n_hidden={n_hidden}"
+                best_desc = f"Best Model({model_idx}) results: loss={best_result[0]:.3f}, accuracy={best_result[1]:.3f}, std={best_result[2]:.3f}, cv_params={cv}"
 
-            desc = f"accuracy={acc:.3f}, std={std:.3f}, n_layers={n_layers}, n_hidden={n_hidden}"
+            desc = f"loss={loss:.3f}, accuracy={acc:.3f}, std={std:.3f}, cv_params={cv}"
             self.logger.info(f"Model({model_idx}) results: {desc}")
             self.logger.info(f'{best_desc}\n')
             results += [f'{model}({model_idx}): {desc}']

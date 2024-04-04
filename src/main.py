@@ -80,9 +80,7 @@ def train_torch():
     run_id = find_run_idx()
     trainer = TrainerTorch(
         run_id=run_id,
-        lr=0.001,
         weight_decay=5e-4,
-        n_epochs=500,
         lr_decay=0.90,
         lr_patience=50,
         decay_steps=50,
