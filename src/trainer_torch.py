@@ -6,7 +6,7 @@ import numpy as np
 import logging
 from torch import tensor
 from torch_geometric.utils import index_to_mask
-from models import GCN, GCN_2L
+from models import GCNConv, GraphSAGE, GIN
 from itertools import product
 from sklearn.model_selection import ParameterGrid
 
@@ -22,15 +22,15 @@ class TrainerTorch:
         self.weight_decay = weight_decay
         # self.epoch_patience = epoch_patience
         self.decay_steps = decay_steps
-        self.n_folds = 10
+        self.n_folds = 15
 
         # cross-validation parameters
         self.cv_params = {
             'layer': [2],  # 2, 3, 4, 5
             'hidden': [16, 32, 64, 128],  # [16, 32, 64, 128, 256]
-            'net': [GCN],
+            'net': [GCNConv, GraphSAGE, GIN],
             'lr': list(np.logspace(-4, -2, num=3)),
-            'epoch': [50, 150, 250, 500],
+            'epoch': [50, 150, 250],
         }
 
         # logging

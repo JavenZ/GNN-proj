@@ -34,19 +34,19 @@ def train_torch():
     # print(x.shape)
 
     # graph aggregated spacial filter
-    x = []
-    for i in range(len(features)):
-        neigh_feats = features[adj_csr[i].astype(bool)]
-        agg_feats = features[i] + neigh_feats.mean(axis=0)  # weighed-mean aggregation
-        # agg_feats = features[i] + neigh_feats.sum(axis=0)  # weighed-sum aggregation
-        x.append(agg_feats)
-    x = np.array(x)
-    scaler = StandardScaler()
-    x = scaler.fit_transform(x)
+    # x = []
+    # for i in range(len(features)):
+    #     neigh_feats = features[adj_csr[i].astype(bool)]
+    #     agg_feats = features[i] + neigh_feats.mean(axis=0)  # weighed-mean aggregation
+    #     # agg_feats = features[i] + neigh_feats.sum(axis=0)  # weighed-sum aggregation
+    #     x.append(agg_feats)
+    # x = np.array(x)
+    # scaler = StandardScaler()
+    # x = scaler.fit_transform(x)
 
     # format data
-    # x = torch.from_numpy(features).type(torch.float)
-    x = torch.from_numpy(x).type(torch.float)
+    x = torch.from_numpy(features).type(torch.float)
+    # x = torch.from_numpy(x).type(torch.float)
     y = torch.zeros(x.shape[0]).type(torch.long)
     y[idx_train] = torch.from_numpy(labels).type(torch.long)
     edges = from_scipy_sparse_matrix(adj)
