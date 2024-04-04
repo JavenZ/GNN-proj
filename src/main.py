@@ -34,19 +34,19 @@ def train_torch():
     # print(x.shape)
 
     # graph aggregated spacial filter
-    # x = []
-    # for i in range(len(features)):
-    #     neigh_feats = features[adj_csr[i].astype(bool)]
-    #     agg_feats = features[i] + neigh_feats.mean(axis=0)  # weighed-mean aggregation
-    #     # agg_feats = features[i] + neigh_feats.sum(axis=0)  # weighed-sum aggregation
-    #     x.append(agg_feats)
-    # x = np.array(x)
-    # scaler = StandardScaler()
-    # x = scaler.fit_transform(x)
+    x = []
+    for i in range(len(features)):
+        neigh_feats = features[adj_csr[i].astype(bool)]
+        agg_feats = features[i] + neigh_feats.mean(axis=0)  # weighed-mean aggregation
+        # agg_feats = features[i] + neigh_feats.sum(axis=0)  # weighed-sum aggregation
+        x.append(agg_feats)
+    x = np.array(x)
+    scaler = StandardScaler()
+    x = scaler.fit_transform(x)
 
     # format data
-    x = torch.from_numpy(features).type(torch.float)
-    # x = torch.from_numpy(x).type(torch.float)
+    # x = torch.from_numpy(features).type(torch.float)
+    x = torch.from_numpy(x).type(torch.float)
     y = torch.zeros(x.shape[0]).type(torch.long)
     y[idx_train] = torch.from_numpy(labels).type(torch.long)
     edges = from_scipy_sparse_matrix(adj)
@@ -61,14 +61,6 @@ def train_torch():
         idx_train=idx_train,
         idx_test=idx_test,
     )
-
-    # create data splits
-    # transform = RandomNodeSplit(num_test=50, num_val=50)
-    # t = transform(train_data)
-    # train_data.x = x
-    # train_data.train_mask[idx_train] = t.train_mask
-    # train_data.val_mask[idx_train] = t.val_mask
-    # train_data.test_mask[idx_train] = t.test_mask
 
     """
     Synthesize additional training data.
@@ -91,9 +83,9 @@ def train_torch():
         lr=0.001,
         weight_decay=5e-4,
         n_epochs=500,
-        lr_decay=0.80,
+        lr_decay=0.90,
         lr_patience=50,
-        epoch_patience=100,
+        decay_steps=50,
     )
     y_pred = trainer.run(data=data)
 

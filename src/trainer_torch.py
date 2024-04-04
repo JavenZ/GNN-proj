@@ -11,8 +11,7 @@ from itertools import product
 
 
 class TrainerTorch:
-    def __init__(self, run_id, lr=0.01, weight_decay=5e-4, n_epochs=500, lr_decay=0.8, lr_patience=50,
-                 epoch_patience=500):
+    def __init__(self, run_id, lr=0.01, weight_decay=5e-4, n_epochs=500, lr_decay=0.8, lr_patience=50, decay_steps=50):
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
         # run parameters
@@ -22,11 +21,13 @@ class TrainerTorch:
         self.lr_patience = lr_patience
         self.weight_decay = weight_decay
         self.n_epochs = n_epochs
-        self.epoch_patience = epoch_patience
+        # self.epoch_patience = epoch_patience
+        self.decay_steps = decay_steps
+        self.n_folds = 10
 
         # cross-validation parameters
         self.layers = [2]  # 2, 3, 4, 5
-        self.hiddens = [16, 32, 64, 128]
+        self.hiddens = [16, 32, 64, 128]  # [16, 32, 64, 128, 256]
         self.net = GCN
 
         # logging
@@ -43,10 +44,13 @@ class TrainerTorch:
         best_pred = None
 
         # log run parameters
-        self.logger.info(f"# Run({self.run_id}) parameters:\n\tn_epochs={self.n_epochs},"
+        self.logger.info(f"# Run({self.run_id}) parameters:"
+                         f"\n\tn_epochs={self.n_epochs},"
                          f"\n\tlr={self.lr},"
                          f"\n\tlr_decay={self.lr_decay},"
+                         f"\n\tdecay_steps={self.decay_steps},"
                          f"\n\tweight_decay={self.weight_decay},"
+                         f"\n\tn_folds={self.n_folds},"
                          f"\n\tcv_layers={self.layers},"
                          f"\n\tcv_hiddens={self.hiddens},"
                          f"\n\tcv_models={self.net}\n"
@@ -66,11 +70,11 @@ class TrainerTorch:
             loss, acc, std = self.cross_validation(
                 data,
                 model,
-                n_folds=10,
+                n_folds=self.n_folds,
                 n_epochs=self.n_epochs,
                 lr=self.lr,
                 lr_decay=self.lr_decay,
-                lr_step_size=25,
+                lr_step_size=self.decay_steps,
                 lr_patience=self.lr_patience,
                 weight_decay=self.weight_decay,
             )
@@ -108,9 +112,8 @@ class TrainerTorch:
             data.test_mask = torch.zeros(data.x.shape[0], dtype=torch.bool)
             data.test_mask[data.idx_train] = index_to_mask(test_idx, size=x_len)
 
-            model.to(self.device).reset_parameters()
-
             # optimizer
+            model.to(self.device).reset_parameters()
             optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
 
             # TODO learning rate scheduler
