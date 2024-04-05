@@ -11,6 +11,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from trainer_neat import TrainerNEAT
 from trainer_torch import TrainerTorch
+from transforms import RemoveFreeColumns
 from torch_geometric.data import Data, Dataset
 from torch_geometric.utils import from_scipy_sparse_matrix, mask_to_index, unbatch_edge_index, to_edge_index
 from torch_geometric.datasets import Planetoid
@@ -18,20 +19,15 @@ import torch_geometric.transforms as T
 from ydata_synthetic.synthesizers.regular import RegularSynthesizer
 from ydata_synthetic.synthesizers import ModelParameters, TrainParameters
 from torch_geometric.transforms import RandomLinkSplit, RandomNodeSplit
+from numpy.linalg import matrix_rank
 
 
 def train_torch():
     """
     Preprocess data.
     """
-    # dimensionality reduction
-    # scaler = StandardScaler()
-    # x = scaler.fit_transform(x)
-    # pca = PCA(.95)
-    # print(x.shape)
-    # pca.fit(x)
-    # x = pca.transform(x)
-    # print(x.shape)
+    # define X matrix
+    x = features
 
     # graph aggregated spacial filter
     # x = []
@@ -41,19 +37,17 @@ def train_torch():
     #     # agg_feats = features[i] + neigh_feats.sum(axis=0)  # weighed-sum aggregation
     #     x.append(agg_feats)
     # x = np.array(x)
-    # scaler = StandardScaler()
-    # x = scaler.fit_transform(x)
 
+    """
+    Construct Torch Data object(s).
+    """
     # format data
-    x = torch.from_numpy(features).type(torch.float)
-    # x = torch.from_numpy(x).type(torch.float)
+    x = torch.from_numpy(x).type(torch.float)
     y = torch.zeros(x.shape[0]).type(torch.long)
     y[idx_train] = torch.from_numpy(labels).type(torch.long)
     edges = from_scipy_sparse_matrix(adj)
 
-    """
-    Construct Torch data object(s).
-    """
+    # Data object
     data = Data(
         x=x,
         y=y,
@@ -61,6 +55,18 @@ def train_torch():
         idx_train=idx_train,
         idx_test=idx_test,
     )
+
+    """
+    Apply data transformations.
+    """
+    transform = T.Compose([
+        RemoveFreeColumns(free_columns=[30, 108, 444, 943, 1264]),
+        T.RemoveDuplicatedEdges(),
+        T.RemoveIsolatedNodes(),
+        T.NormalizeFeatures(),
+        T.SVDFeatureReduction(out_channels=1100),
+    ])
+    data = transform(data)
 
     """
     Synthesize additional training data.
@@ -75,7 +81,7 @@ def train_torch():
     # exit(1)
 
     """
-    Run Trainer.
+    Run Trainer and save predictions.
     """
     run_id = find_run_idx()
     trainer = TrainerTorch(
@@ -85,11 +91,12 @@ def train_torch():
         lr_patience=50,
         decay_steps=50,
     )
+    trainer.logger.info(transform)
+    trainer.logger.info(f"{data.x.numpy().shape}")
     y_pred = trainer.run(data=data)
 
     # sort predictions by correct index & save results
     y_pred = y_pred[idx_test]
-    trainer.logger.info(f"{x.numpy().shape}")
     print(f"y_pred[:10] = {y_pred[:10].tolist()}")
     print(f"y_real[:10] = [1, 2, 2, 1, 1, 2, 3, 1, 1, 1]")
     np.savetxt(f'logs/{run_id}/submission.txt', y_pred, fmt='%d')

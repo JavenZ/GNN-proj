@@ -27,10 +27,10 @@ class TrainerTorch:
         # cross-validation parameters
         self.cv_params = {
             'layer': [2],  # 2, 3, 4, 5
-            'hidden': [16, 32, 64, 128],  # [16, 32, 64, 128, 256]
+            'hidden': [32, 64, 128],  # [16, 32, 64, 128, 256]
             'net': [GCNConv, GraphSAGE, GIN],
             'lr': list(np.logspace(-4, -2, num=3)),
-            'epoch': [50, 150, 250],
+            'epoch': [150, 250, 500],
         }
 
         # logging
