@@ -59,12 +59,23 @@ def train_torch():
     """
     Apply data transformations.
     """
+    T_GDC = T.GDC(
+        self_loop_weight=1,
+        normalization_in='sym',
+        normalization_out='col',
+        diffusion_kwargs=dict(method='ppr', alpha=0.05),
+        sparsification_kwargs=dict(method='topk', k=128, dim=0),
+        exact=True,
+    )
+    
     transform = T.Compose([
         RemoveFreeColumns(free_columns=[30, 108, 444, 943, 1264]),
         T.RemoveDuplicatedEdges(),
         T.RemoveIsolatedNodes(),
         T.NormalizeFeatures(),
         T.SVDFeatureReduction(out_channels=1100),
+        T.GCNNorm(),
+        T_GDC,
     ])
     data = transform(data)
 
