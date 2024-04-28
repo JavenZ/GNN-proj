@@ -9,6 +9,8 @@ from scipy.sparse import csr_matrix
 import scipy.sparse as sp
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
+from torch_geometric import seed_everything
+
 from trainer_neat import TrainerNEAT
 from trainer_torch import TrainerTorch
 from transforms import RemoveFreeColumns
@@ -20,12 +22,16 @@ from ydata_synthetic.synthesizers.regular import RegularSynthesizer
 from ydata_synthetic.synthesizers import ModelParameters, TrainParameters
 from torch_geometric.transforms import RandomLinkSplit, RandomNodeSplit
 from numpy.linalg import matrix_rank
+from torch_geometric.nn import aggr
+import torch_geometric.nn as gnn
 
 
 def train_torch():
     """
     Preprocess data.
     """
+    seed_everything(777)
+
     # define X matrix
     x = features
 
@@ -67,15 +73,15 @@ def train_torch():
         sparsification_kwargs=dict(method='topk', k=128, dim=0),
         exact=True,
     )
-    
+
     transform = T.Compose([
-        RemoveFreeColumns(free_columns=[30, 108, 444, 943, 1264]),
+        # RemoveFreeColumns(free_columns=[30, 108, 444, 943, 1264]),
         T.RemoveDuplicatedEdges(),
         T.RemoveIsolatedNodes(),
-        T.NormalizeFeatures(),
-        T.SVDFeatureReduction(out_channels=1100),
+        # T.NormalizeFeatures(),
+        # T.SVDFeatureReduction(out_channels=1300),
         T.GCNNorm(),
-        T_GDC,
+        # T_GDC,
     ])
     data = transform(data)
 
@@ -98,7 +104,7 @@ def train_torch():
     trainer = TrainerTorch(
         run_id=run_id,
         weight_decay=5e-4,
-        lr_decay=0.90,
+        lr_decay=0.5,
         lr_patience=50,
         decay_steps=50,
     )
@@ -164,6 +170,7 @@ def find_run_idx():
     return run_idx
 
 
+
 if __name__ == "__main__":
     """
     Load data.
@@ -179,7 +186,7 @@ if __name__ == "__main__":
     idx_train = _splits['idx_train']  # (496,)
     idx_test = _splits['idx_test']  # (1984,)
 
-    cora_dataset = Planetoid(root='C:\Tmp\Cora', name='Cora')
+    # cora_dataset = Planetoid(root='C:\Tmp\Cora', name='Cora')
 
     """
     Run trainer.
