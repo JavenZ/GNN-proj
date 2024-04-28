@@ -3,6 +3,32 @@ import torch.nn.functional as F
 from torch.nn import BatchNorm1d as BN
 from torch.nn import Linear, ReLU, Sequential
 import torch_geometric.nn as gnn
+from torch_geometric.nn import aggr
+
+
+class AggGCNConv(torch.nn.Module):
+    def __init__(self, data, n_layers: int, n_hidden: int):
+        super().__init__()
+        n_features = data.x.shape[1]
+        n_classes = int((data.y.max() + 1).item())
+
+        self.conv1 = gnn.GCNConv(n_features, n_hidden, normalize=True)  # , aggr=['mean']
+        self.conv2 = gnn.GCNConv(n_hidden, n_classes, normalize=True)
+        self.global_pool = aggr.SortAggregation(k=4)
+
+    def forward(self, data):
+        x, edge_index, batch = data.x, data.edge_index, data.batch
+        x = F.relu(self.conv1(x, edge_index))
+        x = F.dropout(x, p=0.5, training=self.training)
+        x = F.relu(self.conv2(x, edge_index))
+        return F.log_softmax(x, dim=-1)
+
+    def reset_parameters(self):
+        self.conv1.reset_parameters()
+        self.conv2.reset_parameters()
+
+    def __repr__(self):
+        return self.__class__.__name__
 
 
 class GCN(torch.nn.Module):

@@ -6,7 +6,7 @@ import numpy as np
 import logging
 from torch import tensor
 from torch_geometric.utils import index_to_mask
-from models import GCNConv, GraphSAGE, GIN
+from models import GCNConv, GraphSAGE, GIN, AggGCNConv
 from itertools import product
 from sklearn.model_selection import ParameterGrid
 
@@ -22,15 +22,15 @@ class TrainerTorch:
         self.weight_decay = weight_decay
         # self.epoch_patience = epoch_patience
         self.decay_steps = decay_steps
-        self.n_folds = 15
+        self.n_folds = 5
 
         # cross-validation parameters
         self.cv_params = {
             'layer': [2],  # 2, 3, 4, 5
             'hidden': [32, 64, 128],  # [16, 32, 64, 128, 256]
-            'net': [GCNConv, GraphSAGE, GIN],
-            'lr': list(np.logspace(-4, -2, num=3)),
-            'epoch': [150, 250, 500],
+            'net': [GCNConv, GraphSAGE, GIN, AggGCNConv],  # [GCNConv, GraphSAGE, GIN],
+            'lr': [0.01],  # list(np.logspace(-4, -2, num=3)),
+            'epoch': [250],
         }
 
         # logging
@@ -112,22 +112,16 @@ class TrainerTorch:
             data.test_mask = torch.zeros(data.x.shape[0], dtype=torch.bool)
             data.test_mask[data.idx_train] = index_to_mask(test_idx, size=x_len)
 
-            # optimizer
+            # optimizer & learning rate scheduler
             model.to(self.device).reset_parameters()
             optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
-
-            # TODO learning rate scheduler
-            lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-                optimizer=optimizer,
-                factor=lr_decay,
-                patience=lr_patience
-            )
 
             # train model for each epoch in this fold
             t_start = time.perf_counter()
             for epoch in range(1, n_epochs + 1):
                 train_loss = self.train(model, optimizer, data)
-                val_losses.append(self.eval_loss(model, data))
+                val_loss = self.eval_loss(model, data)
+                val_losses.append(val_loss)
                 accs.append(self.eval_accuracy(model, data))
 
                 if epoch % lr_step_size == 0:
