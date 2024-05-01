@@ -1,0 +1,34 @@
+Compose([
+  RemoveFreeColumns([30, 108, 444, 943, 1264]),
+  NormalizeFeatures()
+])
+(2480, 1385)
+# Run(80):
+	cv_params={'layer': [2], 'hidden': [64], 'net': [<class 'models.AggGCNConv'>], 'lr': [0.01], 'epoch': [150]},
+	lr_decay=0.9,
+	decay_steps=50,
+	weight_decay=0.0005,
+	n_folds=5,
+
+# Evaluating model(0): {'epoch': 150, 'hidden': 64, 'layer': 2, 'lr': 0.01, 'net': <class 'models.AggGCNConv'>}
+{'fold': 0, 'epoch': 50, 'train_loss': 1.3983702659606934, 'val_loss': 1.3239551782608032, 'test_acc': 0.7099999785423279}
+{'fold': 0, 'epoch': 100, 'train_loss': 1.2565407752990723, 'val_loss': 1.1668691635131836, 'test_acc': 0.7300000190734863}
+{'fold': 0, 'epoch': 150, 'train_loss': 1.247540831565857, 'val_loss': 1.1067218780517578, 'test_acc': 0.7599999904632568}
+{'fold': 1, 'epoch': 50, 'train_loss': 1.5552809238433838, 'val_loss': 1.5707671642303467, 'test_acc': 0.5353535413742065}
+{'fold': 1, 'epoch': 100, 'train_loss': 1.5853294134140015, 'val_loss': 1.4768056869506836, 'test_acc': 0.5858585834503174}
+{'fold': 1, 'epoch': 150, 'train_loss': 1.4680631160736084, 'val_loss': 1.4330146312713623, 'test_acc': 0.5757575631141663}
+{'fold': 2, 'epoch': 50, 'train_loss': 1.6254050731658936, 'val_loss': 1.5978326797485352, 'test_acc': 0.5454545617103577}
+{'fold': 2, 'epoch': 100, 'train_loss': 1.6363805532455444, 'val_loss': 1.4985511302947998, 'test_acc': 0.5555555820465088}
+{'fold': 2, 'epoch': 150, 'train_loss': 1.4967422485351562, 'val_loss': 1.4696407318115234, 'test_acc': 0.5555555820465088}
+{'fold': 3, 'epoch': 50, 'train_loss': 1.333838939666748, 'val_loss': 1.2653188705444336, 'test_acc': 0.7777777910232544}
+{'fold': 3, 'epoch': 100, 'train_loss': 1.346956729888916, 'val_loss': 1.1244285106658936, 'test_acc': 0.8282828330993652}
+{'fold': 3, 'epoch': 150, 'train_loss': 1.2288672924041748, 'val_loss': 1.0783153772354126, 'test_acc': 0.808080792427063}
+{'fold': 4, 'epoch': 50, 'train_loss': 1.4014601707458496, 'val_loss': 1.3716397285461426, 'test_acc': 0.7070707082748413}
+{'fold': 4, 'epoch': 100, 'train_loss': 1.2917585372924805, 'val_loss': 1.2228763103485107, 'test_acc': 0.7171717286109924}
+{'fold': 4, 'epoch': 150, 'train_loss': 1.2449818849563599, 'val_loss': 1.1773003339767456, 'test_acc': 0.6969696879386902}
+Val Loss: 1.2495, Test Accuracy: 0.675 +/- 0.100, Duration: 7.522
+Model(0) results: loss=1.249, accuracy=0.675, std=0.100, cv_params={'epoch': 150, 'hidden': 64, 'layer': 2, 'lr': 0.01, 'net': <class 'models.AggGCNConv'>}
+Best Model(0) results: loss=1.249, accuracy=0.675, std=0.100, cv_params={'epoch': 150, 'hidden': 64, 'layer': 2, 'lr': 0.01, 'net': <class 'models.AggGCNConv'>}
+
+--
+AggGCNConv(0): loss=1.249, accuracy=0.675, std=0.100, cv_params={'epoch': 150, 'hidden': 64, 'layer': 2, 'lr': 0.01, 'net': <class 'models.AggGCNConv'>}

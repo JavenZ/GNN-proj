@@ -1,0 +1,14 @@
+Compose([
+  RemoveDuplicatedEdges(),
+  RemoveIsolatedNodes(),
+  GCNNorm(add_self_loops=True)
+])
+(2480, 1390)
+# Run(85):
+	cv_params={'layer': [2], 'hidden': [64], 'net': [<class 'models.AggGCNConv'>], 'lr': [0.01], 'epoch': [150]},
+	lr_decay=0.9,
+	decay_steps=50,
+	weight_decay=0.0005,
+	n_folds=1,
+
+# Evaluating model(0): {'epoch': 150, 'hidden': 64, 'layer': 2, 'lr': 0.01, 'net': <class 'models.AggGCNConv'>}

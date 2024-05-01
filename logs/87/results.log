@@ -1,0 +1,45 @@
+Compose([
+  RemoveDuplicatedEdges(),
+  RemoveIsolatedNodes(),
+  GCNNorm(add_self_loops=True)
+])
+(2480, 1390)
+# Run(87):
+	cv_params={'layer': [2], 'hidden': [64], 'net': [<class 'models.AggGCNConv'>], 'lr': [0.001], 'epoch': [250]},
+	lr_decay=0.9,
+	decay_steps=50,
+	weight_decay=0.0005,
+	n_folds=5,
+
+# Evaluating model(0): {'epoch': 250, 'hidden': 64, 'layer': 2, 'lr': 0.001, 'net': <class 'models.AggGCNConv'>}
+{'fold': 0, 'epoch': 50, 'train_loss': 1.218715786933899, 'val_loss': 1.1582995653152466, 'test_acc': 0.7900000214576721}
+{'fold': 0, 'epoch': 100, 'train_loss': 1.0633864402770996, 'val_loss': 0.9479097127914429, 'test_acc': 0.7900000214576721}
+{'fold': 0, 'epoch': 150, 'train_loss': 1.0754512548446655, 'val_loss': 0.8809590935707092, 'test_acc': 0.7900000214576721}
+{'fold': 0, 'epoch': 200, 'train_loss': 1.0175083875656128, 'val_loss': 0.8447837233543396, 'test_acc': 0.7900000214576721}
+{'fold': 0, 'epoch': 250, 'train_loss': 1.0121827125549316, 'val_loss': 0.8239319324493408, 'test_acc': 0.7900000214576721}
+{'fold': 1, 'epoch': 50, 'train_loss': 1.3191605806350708, 'val_loss': 1.2680526971817017, 'test_acc': 0.8181818127632141}
+{'fold': 1, 'epoch': 100, 'train_loss': 1.100159764289856, 'val_loss': 1.006412148475647, 'test_acc': 0.8181818127632141}
+{'fold': 1, 'epoch': 150, 'train_loss': 1.0819170475006104, 'val_loss': 0.9572806358337402, 'test_acc': 0.8181818127632141}
+{'fold': 1, 'epoch': 200, 'train_loss': 0.98506098985672, 'val_loss': 0.9207524657249451, 'test_acc': 0.808080792427063}
+{'fold': 1, 'epoch': 250, 'train_loss': 0.9272152781486511, 'val_loss': 0.9037679433822632, 'test_acc': 0.8181818127632141}
+{'fold': 2, 'epoch': 50, 'train_loss': 1.2645812034606934, 'val_loss': 1.221814513206482, 'test_acc': 0.8282828330993652}
+{'fold': 2, 'epoch': 100, 'train_loss': 1.0852562189102173, 'val_loss': 1.0020443201065063, 'test_acc': 0.8484848737716675}
+{'fold': 2, 'epoch': 150, 'train_loss': 1.0479995012283325, 'val_loss': 0.9450648427009583, 'test_acc': 0.8484848737716675}
+{'fold': 2, 'epoch': 200, 'train_loss': 1.0154820680618286, 'val_loss': 0.9151489734649658, 'test_acc': 0.8484848737716675}
+{'fold': 2, 'epoch': 250, 'train_loss': 1.0481890439987183, 'val_loss': 0.9013773798942566, 'test_acc': 0.8585858345031738}
+{'fold': 3, 'epoch': 50, 'train_loss': 1.1881349086761475, 'val_loss': 1.1102551221847534, 'test_acc': 0.8484848737716675}
+{'fold': 3, 'epoch': 100, 'train_loss': 1.0451583862304688, 'val_loss': 0.8888882994651794, 'test_acc': 0.8383838534355164}
+{'fold': 3, 'epoch': 150, 'train_loss': 0.9815123081207275, 'val_loss': 0.8202980160713196, 'test_acc': 0.8383838534355164}
+{'fold': 3, 'epoch': 200, 'train_loss': 0.9836739301681519, 'val_loss': 0.7827548384666443, 'test_acc': 0.8282828330993652}
+{'fold': 3, 'epoch': 250, 'train_loss': 1.0357009172439575, 'val_loss': 0.758963942527771, 'test_acc': 0.8282828330993652}
+{'fold': 4, 'epoch': 50, 'train_loss': 1.2158141136169434, 'val_loss': 1.1393439769744873, 'test_acc': 0.8282828330993652}
+{'fold': 4, 'epoch': 100, 'train_loss': 1.1103516817092896, 'val_loss': 0.9233582615852356, 'test_acc': 0.8484848737716675}
+{'fold': 4, 'epoch': 150, 'train_loss': 0.9404858350753784, 'val_loss': 0.8604075312614441, 'test_acc': 0.8484848737716675}
+{'fold': 4, 'epoch': 200, 'train_loss': 1.0347284078598022, 'val_loss': 0.8338455557823181, 'test_acc': 0.8484848737716675}
+{'fold': 4, 'epoch': 250, 'train_loss': 1.067616581916809, 'val_loss': 0.8126205801963806, 'test_acc': 0.8383838534355164}
+Val Loss: 0.8393, Test Accuracy: 0.825 +/- 0.022, Duration: 12.678
+Model(0) results: loss=0.839, accuracy=0.825, std=0.022, cv_params={'epoch': 250, 'hidden': 64, 'layer': 2, 'lr': 0.001, 'net': <class 'models.AggGCNConv'>}
+Best Model(0) results: loss=0.839, accuracy=0.825, std=0.022, cv_params={'epoch': 250, 'hidden': 64, 'layer': 2, 'lr': 0.001, 'net': <class 'models.AggGCNConv'>}
+
+--
+AggGCNConv(0): loss=0.839, accuracy=0.825, std=0.022, cv_params={'epoch': 250, 'hidden': 64, 'layer': 2, 'lr': 0.001, 'net': <class 'models.AggGCNConv'>}

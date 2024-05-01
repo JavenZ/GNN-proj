@@ -1,0 +1,45 @@
+Compose([
+  RemoveDuplicatedEdges(),
+  RemoveIsolatedNodes(),
+  GCNNorm(add_self_loops=True)
+])
+(2480, 1390)
+# Run(97):
+	cv_params={'layer': [2], 'hidden': [64], 'net': [<class 'models.AggGCNConv'>], 'lr': [0.01], 'epoch': [250]},
+	lr_decay=0.9,
+	decay_steps=50,
+	weight_decay=0.0005,
+	n_folds=5,
+
+# Evaluating model(0): {'epoch': 250, 'hidden': 64, 'layer': 2, 'lr': 0.01, 'net': <class 'models.AggGCNConv'>}
+{'fold': 0, 'epoch': 50, 'train_loss': 1.9435428380966187, 'val_loss': 1.9427642822265625, 'test_acc': 0.20000000298023224}
+{'fold': 0, 'epoch': 100, 'train_loss': 1.9397932291030884, 'val_loss': 1.9427642822265625, 'test_acc': 0.20000000298023224}
+{'fold': 0, 'epoch': 150, 'train_loss': 1.9452446699142456, 'val_loss': 1.9427642822265625, 'test_acc': 0.20000000298023224}
+{'fold': 0, 'epoch': 200, 'train_loss': 1.9452403783798218, 'val_loss': 1.9427642822265625, 'test_acc': 0.20000000298023224}
+{'fold': 0, 'epoch': 250, 'train_loss': 1.9412310123443604, 'val_loss': 1.9427642822265625, 'test_acc': 0.20000000298023224}
+{'fold': 1, 'epoch': 50, 'train_loss': 1.9518214464187622, 'val_loss': 1.9508646726608276, 'test_acc': 0.13131313025951385}
+{'fold': 1, 'epoch': 100, 'train_loss': 1.948169231414795, 'val_loss': 1.9508646726608276, 'test_acc': 0.13131313025951385}
+{'fold': 1, 'epoch': 150, 'train_loss': 1.949960470199585, 'val_loss': 1.9508646726608276, 'test_acc': 0.13131313025951385}
+{'fold': 1, 'epoch': 200, 'train_loss': 1.9482567310333252, 'val_loss': 1.9508646726608276, 'test_acc': 0.13131313025951385}
+{'fold': 1, 'epoch': 250, 'train_loss': 1.9475557804107666, 'val_loss': 1.9508646726608276, 'test_acc': 0.13131313025951385}
+{'fold': 2, 'epoch': 50, 'train_loss': 1.949811339378357, 'val_loss': 1.949507474899292, 'test_acc': 0.14141413569450378}
+{'fold': 2, 'epoch': 100, 'train_loss': 1.9525251388549805, 'val_loss': 1.949507474899292, 'test_acc': 0.14141413569450378}
+{'fold': 2, 'epoch': 150, 'train_loss': 1.950400948524475, 'val_loss': 1.949507474899292, 'test_acc': 0.14141413569450378}
+{'fold': 2, 'epoch': 200, 'train_loss': 1.9531569480895996, 'val_loss': 1.949507474899292, 'test_acc': 0.14141413569450378}
+{'fold': 2, 'epoch': 250, 'train_loss': 1.9505846500396729, 'val_loss': 1.949507474899292, 'test_acc': 0.14141413569450378}
+{'fold': 3, 'epoch': 50, 'train_loss': 1.9320588111877441, 'val_loss': 1.934991717338562, 'test_acc': 0.2525252401828766}
+{'fold': 3, 'epoch': 100, 'train_loss': 1.9335832595825195, 'val_loss': 1.934991717338562, 'test_acc': 0.2525252401828766}
+{'fold': 3, 'epoch': 150, 'train_loss': 1.9360188245773315, 'val_loss': 1.934991717338562, 'test_acc': 0.2525252401828766}
+{'fold': 3, 'epoch': 200, 'train_loss': 1.934017539024353, 'val_loss': 1.934991717338562, 'test_acc': 0.2525252401828766}
+{'fold': 3, 'epoch': 250, 'train_loss': 1.9322943687438965, 'val_loss': 1.934991717338562, 'test_acc': 0.2525252401828766}
+{'fold': 4, 'epoch': 50, 'train_loss': 1.9412533044815063, 'val_loss': 1.941907286643982, 'test_acc': 0.2626262605190277}
+{'fold': 4, 'epoch': 100, 'train_loss': 1.9425327777862549, 'val_loss': 1.941907286643982, 'test_acc': 0.2626262605190277}
+{'fold': 4, 'epoch': 150, 'train_loss': 1.9409151077270508, 'val_loss': 1.941907286643982, 'test_acc': 0.2626262605190277}
+{'fold': 4, 'epoch': 200, 'train_loss': 1.9448658227920532, 'val_loss': 1.941907286643982, 'test_acc': 0.2626262605190277}
+{'fold': 4, 'epoch': 250, 'train_loss': 1.9412519931793213, 'val_loss': 1.941907286643982, 'test_acc': 0.2626262605190277}
+Val Loss: 1.9440, Test Accuracy: 0.198 +/- 0.061, Duration: 12.802
+Model(0) results: loss=1.944, accuracy=0.198, std=0.061, cv_params={'epoch': 250, 'hidden': 64, 'layer': 2, 'lr': 0.01, 'net': <class 'models.AggGCNConv'>}
+Best Model(0) results: loss=1.944, accuracy=0.198, std=0.061, cv_params={'epoch': 250, 'hidden': 64, 'layer': 2, 'lr': 0.01, 'net': <class 'models.AggGCNConv'>}
+
+--
+AggGCNConv(0): loss=1.944, accuracy=0.198, std=0.061, cv_params={'epoch': 250, 'hidden': 64, 'layer': 2, 'lr': 0.01, 'net': <class 'models.AggGCNConv'>}

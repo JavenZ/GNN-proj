@@ -1,0 +1,45 @@
+Compose([
+  RemoveDuplicatedEdges(),
+  RemoveIsolatedNodes(),
+  GCNNorm(add_self_loops=True)
+])
+(2480, 1390)
+# Run(95):
+	cv_params={'layer': [2], 'hidden': [64], 'net': [<class 'models.AggGCNConv'>], 'lr': [0.01], 'epoch': [250]},
+	lr_decay=0.9,
+	decay_steps=50,
+	weight_decay=0.0005,
+	n_folds=5,
+
+# Evaluating model(0): {'epoch': 250, 'hidden': 64, 'layer': 2, 'lr': 0.01, 'net': <class 'models.AggGCNConv'>}
+{'fold': 0, 'epoch': 50, 'train_loss': 0.021325185894966125, 'val_loss': 0.7099258899688721, 'test_acc': 0.7900000214576721}
+{'fold': 0, 'epoch': 100, 'train_loss': 0.020455097779631615, 'val_loss': 0.7031652927398682, 'test_acc': 0.7900000214576721}
+{'fold': 0, 'epoch': 150, 'train_loss': 0.022171152755618095, 'val_loss': 0.7046446204185486, 'test_acc': 0.800000011920929}
+{'fold': 0, 'epoch': 200, 'train_loss': 0.01811184361577034, 'val_loss': 0.7126893401145935, 'test_acc': 0.800000011920929}
+{'fold': 0, 'epoch': 250, 'train_loss': 0.015969643369317055, 'val_loss': 0.731454074382782, 'test_acc': 0.7900000214576721}
+{'fold': 1, 'epoch': 50, 'train_loss': 0.06069908291101456, 'val_loss': 0.7403544783592224, 'test_acc': 0.808080792427063}
+{'fold': 1, 'epoch': 100, 'train_loss': 0.02824421413242817, 'val_loss': 0.7067904472351074, 'test_acc': 0.7878788113594055}
+{'fold': 1, 'epoch': 150, 'train_loss': 0.022888686507940292, 'val_loss': 0.7519716024398804, 'test_acc': 0.7979797720909119}
+{'fold': 1, 'epoch': 200, 'train_loss': 0.02282298356294632, 'val_loss': 0.7321043610572815, 'test_acc': 0.7878788113594055}
+{'fold': 1, 'epoch': 250, 'train_loss': 0.018713440746068954, 'val_loss': 0.7420170307159424, 'test_acc': 0.7878788113594055}
+{'fold': 2, 'epoch': 50, 'train_loss': 0.029963294044137, 'val_loss': 0.7099097371101379, 'test_acc': 0.8484848737716675}
+{'fold': 2, 'epoch': 100, 'train_loss': 0.02827843464910984, 'val_loss': 0.7173770666122437, 'test_acc': 0.8484848737716675}
+{'fold': 2, 'epoch': 150, 'train_loss': 0.021312585100531578, 'val_loss': 0.715584933757782, 'test_acc': 0.8484848737716675}
+{'fold': 2, 'epoch': 200, 'train_loss': 0.02194153144955635, 'val_loss': 0.7501356601715088, 'test_acc': 0.8585858345031738}
+{'fold': 2, 'epoch': 250, 'train_loss': 0.021334432065486908, 'val_loss': 0.7219682931900024, 'test_acc': 0.8585858345031738}
+{'fold': 3, 'epoch': 50, 'train_loss': 0.21060827374458313, 'val_loss': 0.5446754097938538, 'test_acc': 0.7575757503509521}
+{'fold': 3, 'epoch': 100, 'train_loss': 0.20388352870941162, 'val_loss': 0.5650439262390137, 'test_acc': 0.7777777910232544}
+{'fold': 3, 'epoch': 150, 'train_loss': 0.19926749169826508, 'val_loss': 0.5626991987228394, 'test_acc': 0.7777777910232544}
+{'fold': 3, 'epoch': 200, 'train_loss': 0.1955931931734085, 'val_loss': 0.5642207264900208, 'test_acc': 0.7878788113594055}
+{'fold': 3, 'epoch': 250, 'train_loss': 0.1981188952922821, 'val_loss': 0.5704953074455261, 'test_acc': 0.7878788113594055}
+{'fold': 4, 'epoch': 50, 'train_loss': 0.026558300480246544, 'val_loss': 0.5496327877044678, 'test_acc': 0.808080792427063}
+{'fold': 4, 'epoch': 100, 'train_loss': 0.0276205912232399, 'val_loss': 0.5737740397453308, 'test_acc': 0.808080792427063}
+{'fold': 4, 'epoch': 150, 'train_loss': 0.021736275404691696, 'val_loss': 0.6134562492370605, 'test_acc': 0.808080792427063}
+{'fold': 4, 'epoch': 200, 'train_loss': 0.018829837441444397, 'val_loss': 0.6290979385375977, 'test_acc': 0.7777777910232544}
+{'fold': 4, 'epoch': 250, 'train_loss': 0.018464654684066772, 'val_loss': 0.6110111474990845, 'test_acc': 0.808080792427063}
+Val Loss: 0.5698, Test Accuracy: 0.811 +/- 0.045, Duration: 14.940
+Model(0) results: loss=0.570, accuracy=0.811, std=0.045, cv_params={'epoch': 250, 'hidden': 64, 'layer': 2, 'lr': 0.01, 'net': <class 'models.AggGCNConv'>}
+Best Model(0) results: loss=0.570, accuracy=0.811, std=0.045, cv_params={'epoch': 250, 'hidden': 64, 'layer': 2, 'lr': 0.01, 'net': <class 'models.AggGCNConv'>}
+
+--
+AggGCNConv(0): loss=0.570, accuracy=0.811, std=0.045, cv_params={'epoch': 250, 'hidden': 64, 'layer': 2, 'lr': 0.01, 'net': <class 'models.AggGCNConv'>}

@@ -1,0 +1,12 @@
+Compose([
+  RemoveFreeColumns([30, 108, 444, 943, 1264])
+])
+(2480, 1385)
+# Run(70):
+	cv_params={'layer': [2], 'hidden': [32, 64, 128], 'net': [<class 'models.AggGCNConv'>], 'lr': [0.0001, 0.001, 0.01], 'epoch': [150, 250, 500]},
+	lr_decay=0.9,
+	decay_steps=50,
+	weight_decay=0.0005,
+	n_folds=5,
+
+# Evaluating model(0): {'epoch': 150, 'hidden': 32, 'layer': 2, 'lr': 0.0001, 'net': <class 'models.AggGCNConv'>}

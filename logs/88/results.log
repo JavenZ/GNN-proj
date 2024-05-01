@@ -1,0 +1,55 @@
+Compose([
+  RemoveDuplicatedEdges(),
+  RemoveIsolatedNodes(),
+  GCNNorm(add_self_loops=True)
+])
+(2480, 1390)
+# Run(88):
+	cv_params={'layer': [2], 'hidden': [64], 'net': [<class 'models.AggGCNConv'>], 'lr': [0.001], 'epoch': [350]},
+	lr_decay=0.9,
+	decay_steps=50,
+	weight_decay=0.0005,
+	n_folds=5,
+
+# Evaluating model(0): {'epoch': 350, 'hidden': 64, 'layer': 2, 'lr': 0.001, 'net': <class 'models.AggGCNConv'>}
+{'fold': 0, 'epoch': 50, 'train_loss': 1.218715786933899, 'val_loss': 1.1582995653152466, 'test_acc': 0.7900000214576721}
+{'fold': 0, 'epoch': 100, 'train_loss': 1.0633864402770996, 'val_loss': 0.9479097127914429, 'test_acc': 0.7900000214576721}
+{'fold': 0, 'epoch': 150, 'train_loss': 1.0754512548446655, 'val_loss': 0.8809590935707092, 'test_acc': 0.7900000214576721}
+{'fold': 0, 'epoch': 200, 'train_loss': 1.0175083875656128, 'val_loss': 0.8447837233543396, 'test_acc': 0.7900000214576721}
+{'fold': 0, 'epoch': 250, 'train_loss': 1.0121827125549316, 'val_loss': 0.8239319324493408, 'test_acc': 0.7900000214576721}
+{'fold': 0, 'epoch': 300, 'train_loss': 0.9771507382392883, 'val_loss': 0.8099790811538696, 'test_acc': 0.7799999713897705}
+{'fold': 0, 'epoch': 350, 'train_loss': 1.0574734210968018, 'val_loss': 0.7957504987716675, 'test_acc': 0.7699999809265137}
+{'fold': 1, 'epoch': 50, 'train_loss': 1.3718005418777466, 'val_loss': 1.326308250427246, 'test_acc': 0.7676767706871033}
+{'fold': 1, 'epoch': 100, 'train_loss': 1.1792834997177124, 'val_loss': 1.1474281549453735, 'test_acc': 0.7575757503509521}
+{'fold': 1, 'epoch': 150, 'train_loss': 1.1083900928497314, 'val_loss': 1.0946378707885742, 'test_acc': 0.747474730014801}
+{'fold': 1, 'epoch': 200, 'train_loss': 1.125651478767395, 'val_loss': 1.0713467597961426, 'test_acc': 0.747474730014801}
+{'fold': 1, 'epoch': 250, 'train_loss': 1.1682060956954956, 'val_loss': 1.0502099990844727, 'test_acc': 0.7575757503509521}
+{'fold': 1, 'epoch': 300, 'train_loss': 1.126307725906372, 'val_loss': 1.0445291996002197, 'test_acc': 0.7575757503509521}
+{'fold': 1, 'epoch': 350, 'train_loss': 1.0614093542099, 'val_loss': 1.0326684713363647, 'test_acc': 0.747474730014801}
+{'fold': 2, 'epoch': 50, 'train_loss': 1.2834813594818115, 'val_loss': 1.2019098997116089, 'test_acc': 0.8888888955116272}
+{'fold': 2, 'epoch': 100, 'train_loss': 1.1774364709854126, 'val_loss': 1.0047664642333984, 'test_acc': 0.8787878751754761}
+{'fold': 2, 'epoch': 150, 'train_loss': 1.0532200336456299, 'val_loss': 0.9547716379165649, 'test_acc': 0.868686854839325}
+{'fold': 2, 'epoch': 200, 'train_loss': 1.0216271877288818, 'val_loss': 0.9235347509384155, 'test_acc': 0.8585858345031738}
+{'fold': 2, 'epoch': 250, 'train_loss': 1.1537106037139893, 'val_loss': 0.906135082244873, 'test_acc': 0.8484848737716675}
+{'fold': 2, 'epoch': 300, 'train_loss': 0.968508243560791, 'val_loss': 0.8913437724113464, 'test_acc': 0.8484848737716675}
+{'fold': 2, 'epoch': 350, 'train_loss': 1.0059491395950317, 'val_loss': 0.8845353722572327, 'test_acc': 0.8484848737716675}
+{'fold': 3, 'epoch': 50, 'train_loss': 1.2718603610992432, 'val_loss': 1.1376889944076538, 'test_acc': 0.8383838534355164}
+{'fold': 3, 'epoch': 100, 'train_loss': 1.1143109798431396, 'val_loss': 0.9037182927131653, 'test_acc': 0.8181818127632141}
+{'fold': 3, 'epoch': 150, 'train_loss': 1.108654260635376, 'val_loss': 0.8197839260101318, 'test_acc': 0.808080792427063}
+{'fold': 3, 'epoch': 200, 'train_loss': 1.1263823509216309, 'val_loss': 0.779603898525238, 'test_acc': 0.808080792427063}
+{'fold': 3, 'epoch': 250, 'train_loss': 1.0554567575454712, 'val_loss': 0.7520058155059814, 'test_acc': 0.808080792427063}
+{'fold': 3, 'epoch': 300, 'train_loss': 1.0658512115478516, 'val_loss': 0.7399062514305115, 'test_acc': 0.808080792427063}
+{'fold': 3, 'epoch': 350, 'train_loss': 1.0459837913513184, 'val_loss': 0.7258757948875427, 'test_acc': 0.8181818127632141}
+{'fold': 4, 'epoch': 50, 'train_loss': 1.3198552131652832, 'val_loss': 1.1511106491088867, 'test_acc': 0.808080792427063}
+{'fold': 4, 'epoch': 100, 'train_loss': 1.0049958229064941, 'val_loss': 0.9439922571182251, 'test_acc': 0.8181818127632141}
+{'fold': 4, 'epoch': 150, 'train_loss': 0.9245609641075134, 'val_loss': 0.875466525554657, 'test_acc': 0.8383838534355164}
+{'fold': 4, 'epoch': 200, 'train_loss': 1.0782337188720703, 'val_loss': 0.8504835963249207, 'test_acc': 0.8484848737716675}
+{'fold': 4, 'epoch': 250, 'train_loss': 0.9787396788597107, 'val_loss': 0.8279560804367065, 'test_acc': 0.8282828330993652}
+{'fold': 4, 'epoch': 300, 'train_loss': 0.9904329180717468, 'val_loss': 0.8144441246986389, 'test_acc': 0.808080792427063}
+{'fold': 4, 'epoch': 350, 'train_loss': 1.0024256706237793, 'val_loss': 0.8059608340263367, 'test_acc': 0.808080792427063}
+Val Loss: 0.8487, Test Accuracy: 0.798 +/- 0.040, Duration: 19.483
+Model(0) results: loss=0.849, accuracy=0.798, std=0.040, cv_params={'epoch': 350, 'hidden': 64, 'layer': 2, 'lr': 0.001, 'net': <class 'models.AggGCNConv'>}
+Best Model(0) results: loss=0.849, accuracy=0.798, std=0.040, cv_params={'epoch': 350, 'hidden': 64, 'layer': 2, 'lr': 0.001, 'net': <class 'models.AggGCNConv'>}
+
+--
+AggGCNConv(0): loss=0.849, accuracy=0.798, std=0.040, cv_params={'epoch': 350, 'hidden': 64, 'layer': 2, 'lr': 0.001, 'net': <class 'models.AggGCNConv'>}
